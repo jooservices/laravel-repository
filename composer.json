@@ -1,0 +1,67 @@
+{
+    "name": "jooservices/laravel-repository",
+    "description": "Base repositories with CRUD, filtering, ordering and query-from-request for Laravel",
+    "keywords": ["laravel", "repository", "crud", "filter", "eloquent"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "JOOservices",
+            "email": "dev@jooservices.com"
+        }
+    ],
+    "require": {
+        "php": "^8.5",
+        "illuminate/contracts": "^12.0",
+        "illuminate/database": "^12.0",
+        "illuminate/support": "^12.0",
+        "illuminate/http": "^12.0"
+    },
+    "require-dev": {
+        "laravel/pint": "^1.0",
+        "orchestra/testbench": "^10.0",
+        "phpunit/phpunit": "^11.0",
+        "phpstan/phpstan": "^2.0",
+        "squizlabs/php_codesniffer": "^3.0",
+        "phpmd/phpmd": "^2.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Jooservices\\LaravelRepository\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Jooservices\\LaravelRepository\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Jooservices\\LaravelRepository\\LaravelRepositoryServiceProvider"
+            ]
+        }
+    },
+    "scripts": {
+        "lint": [
+            "pint --test",
+            "@phpcs",
+            "@phpmd",
+            "@phpstan"
+        ],
+        "phpcs": "phpcs",
+        "phpmd": "phpmd src text phpmd.xml.dist",
+        "phpstan": "phpstan analyse --memory-limit=512M",
+        "test": "phpunit",
+        "test:coverage": "phpunit --coverage-text",
+        "check": [
+            "@lint",
+            "@test:coverage"
+        ]
+    },
+    "version": "1.0.0",
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}

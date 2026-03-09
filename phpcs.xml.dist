@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<ruleset name="Laravel Repository">
+    <description>PHPCS for jooservices/laravel-repository (Pint is highest priority; minimal rules to avoid conflict)</description>
+    <file>src</file>
+    <file>tests</file>
+    <exclude-pattern>*/vendor/*</exclude-pattern>
+    <exclude-pattern>*/build/*</exclude-pattern>
+    <arg name="encoding" value="UTF-8"/>
+    <arg value="sp"/>
+    <rule ref="Generic.Files.LineLength">
+        <properties>
+            <property name="lineLimit" value="120"/>
+        </properties>
+        <exclude-pattern>*/Contracts/RepositoryInterface.php</exclude-pattern>
+    </rule>
+</ruleset>
