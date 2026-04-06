@@ -1,5 +1,13 @@
 # Usage guide
 
+This legacy page remains as a compatibility entry point. For the current docs tree, start with:
+
+- [Installation](./01-getting-started/installation.md)
+- [Quick Start](./01-getting-started/quick-start.md)
+- [Trait-Based Composition](./02-user-guide/trait-based-composition.md)
+- [CRUD, Filter, And Order](./02-user-guide/crud-filter-order.md)
+- [Request Query Support](./02-user-guide/request-query.md)
+
 ## Installation
 
 ### Requirements

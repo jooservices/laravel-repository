@@ -18,14 +18,14 @@ trait HasRequestQuery
             $query->where(
                 $where['column'],
                 $where['operator'],
-                $where['value']
+                $where['value'],
             );
         }
         foreach ($clauses['orWhere'] as $where) {
             $query->orWhere(
                 $where['column'],
                 $where['operator'],
-                $where['value']
+                $where['value'],
             );
         }
         foreach ($clauses['whereIn'] as $whereIn) {

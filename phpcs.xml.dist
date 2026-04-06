@@ -1,16 +1,37 @@
 <?xml version="1.0"?>
-<ruleset name="Laravel Repository">
-    <description>PHPCS for jooservices/laravel-repository (Pint is highest priority; minimal rules to avoid conflict)</description>
+<ruleset name="Laravel Repository Coding Standard">
+    <description>Structural PHPCS checks that complement Pint without duplicating formatting.</description>
+
+    <config name="testVersion" value="8.5"/>
+    <arg value="p"/>
+    <arg name="colors"/>
+    <arg name="encoding" value="UTF-8"/>
+
     <file>src</file>
     <file>tests</file>
+
     <exclude-pattern>*/vendor/*</exclude-pattern>
     <exclude-pattern>*/build/*</exclude-pattern>
-    <arg name="encoding" value="UTF-8"/>
-    <arg value="sp"/>
+    <exclude-pattern>*/coverage/*</exclude-pattern>
+    <exclude-pattern>*/.phpunit.cache/*</exclude-pattern>
+
+    <rule ref="PSR1.Files.SideEffects"/>
+    <rule ref="PSR1.Classes.ClassDeclaration.MultipleClasses">
+        <exclude-pattern>*/tests/*</exclude-pattern>
+    </rule>
+    <rule ref="PSR1.Classes.ClassDeclaration"/>
+    <rule ref="PSR1.Methods.CamelCapsMethodName">
+        <exclude-pattern>*/tests/*</exclude-pattern>
+    </rule>
+    <rule ref="PSR12.Files.FileHeader.SpacingAfterBlock"/>
+    <rule ref="Generic.NamingConventions.UpperCaseConstantName"/>
+    <rule ref="Generic.PHP.DeprecatedFunctions"/>
+    <rule ref="Generic.PHP.ForbiddenFunctions"/>
     <rule ref="Generic.Files.LineLength">
         <properties>
             <property name="lineLimit" value="120"/>
+            <property name="absoluteLineLimit" value="140"/>
         </properties>
-        <exclude-pattern>*/Contracts/RepositoryInterface.php</exclude-pattern>
+        <exclude-pattern>*/src/Contracts/RepositoryInterface.php</exclude-pattern>
     </rule>
 </ruleset>

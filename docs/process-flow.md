@@ -1,5 +1,7 @@
 # Process & logic flow
 
+This page remains for detailed legacy flow diagrams. For the main docs tree, start with [Data Flow](./00-architecture/03-data-flow.md).
+
 ## High-level flow
 
 ```

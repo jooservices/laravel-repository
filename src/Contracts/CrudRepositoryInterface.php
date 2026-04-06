@@ -13,10 +13,19 @@ interface CrudRepositoryInterface
 
     public function findOrFail(int|string $id): Model;
 
+    /**
+     * @return Collection<int, Model>
+     */
     public function all(): Collection;
 
+    /**
+     * @param  array<string, mixed>  $data
+     */
     public function create(array $data): Model;
 
+    /**
+     * @param  array<string, mixed>  $data
+     */
     public function update(int|string $id, array $data): bool;
 
     public function delete(int|string $id): bool;

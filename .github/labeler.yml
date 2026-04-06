@@ -1,0 +1,21 @@
+documentation:
+  - changed-files:
+      - any-glob-to-any-file: ['docs/**', 'README.md', 'CHANGELOG.md']
+source:
+  - changed-files:
+      - any-glob-to-any-file: ['src/**']
+tests:
+  - changed-files:
+      - any-glob-to-any-file: ['tests/**']
+dependencies:
+  - changed-files:
+      - any-glob-to-any-file: ['composer.json', 'composer.lock']
+ci/cd:
+  - changed-files:
+      - any-glob-to-any-file: ['.github/workflows/**', 'captainhook.json', '.gitleaks.toml']
+configuration:
+  - changed-files:
+      - any-glob-to-any-file: ['phpcs.xml.dist', 'phpmd.xml.dist', 'phpstan.neon.dist', 'phpunit.xml', 'pint.json', '.php-cs-fixer.dist.php']
+ai:
+  - changed-files:
+      - any-glob-to-any-file: ['.github/instructions/**', '.github/prompts/**', '.github/skills/**', '.cursor/**', '.claude/**', 'ai/**', 'jetbrains/**', 'antigravity/**', 'AGENTS.md', 'CLAUDE.md']

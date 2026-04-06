@@ -1,0 +1,43 @@
+{
+  "config": {
+    "bootstrap": "vendor/autoload.php"
+  },
+  "hooks": {
+    "commit-msg": {
+      "enabled": true,
+      "actions": [
+        {
+          "action": "\"vendor/bin/captainhook\" validate:commit-msg {{file}} --regex \"^(feat|fix|docs|chore|refactor|test|ci|build|perf|revert)(\\([^)]+\\))?: [A-Z].+\""
+        }
+      ]
+    },
+    "pre-commit": {
+      "enabled": true,
+      "actions": [
+        {
+          "action": "gitleaks protect --staged --redact"
+        },
+        {
+          "action": "composer lint:pint"
+        },
+        {
+          "action": "composer lint:phpcs"
+        },
+        {
+          "action": "composer lint:phpstan"
+        }
+      ]
+    },
+    "pre-push": {
+      "enabled": true,
+      "actions": [
+        {
+          "action": "gitleaks detect --redact"
+        },
+        {
+          "action": "composer test"
+        }
+      ]
+    }
+  }
+}
