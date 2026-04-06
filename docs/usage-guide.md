@@ -227,7 +227,7 @@ Use it in `filter()`:
 
 ## Testing and quality
 
-Run the full check (style, PHPCS, PHPMD, PHPStan, tests with coverage):
+Run the full local validation set:
 
 ```bash
 composer check
@@ -236,12 +236,12 @@ composer check
 Or individually:
 
 ```bash
-composer lint           # Pint + PHPCS + PHPMD + PHPStan
-composer phpcs          # PHP CodeSniffer
-composer phpmd          # PHPMD
-composer phpstan        # PHPStan
+composer lint           # Pint + PHPCS + PHPStan
+composer lint:all       # Pint + PHPCS + PHPStan + PHPMD + PHP-CS-Fixer dry-run
+composer lint:fix       # Pint + PHP-CS-Fixer
 composer test           # PHPUnit
-composer test:coverage  # PHPUnit with coverage
+composer test:coverage  # PHPUnit with coverage artifacts
+composer ci             # lint:all + test:coverage
 ```
 
 ---

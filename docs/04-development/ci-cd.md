@@ -36,6 +36,7 @@ Packagist publishing is active for stable version tags and depends on this repos
 ## Policy notes
 
 - Keep the documented coverage threshold aligned with the workflow implementation.
+- Codecov upload runs only when `CODECOV_TOKEN` is configured and the coverage report was generated successfully.
 - `secret-scanning.yml` runs the OSS `gitleaks` CLI against the repository and uploads a SARIF report without requiring a separate Gitleaks license secret.
 - If secret scanning is present but temporarily disabled, document that explicitly rather than implying active enforcement.
 

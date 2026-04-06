@@ -70,7 +70,7 @@ The workflow assumes the Packagist username is `jooservices`.
 
 Before tagging a release:
 
-1. Confirm `composer lint` passes.
+1. Confirm `composer lint:all` passes.
 2. Confirm `composer test` passes.
 3. Review docs for any behavior or contributor-workflow changes.
 4. Confirm `CHANGELOG.md` is up to date if the release process depends on it.

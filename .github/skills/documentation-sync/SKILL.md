@@ -11,6 +11,7 @@ description: "Use when public behavior, contributor workflow, docs structure, or
 - `docs/README.md`
 - The numbered docs pages affected by the change
 - `AGENTS.md` and AI usage guides when contributor workflow changes
+- Setup, CI/CD, and release docs when workflow prerequisites or external-service assumptions change
 
 ## Documentation truth rules
 

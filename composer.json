@@ -68,6 +68,7 @@
             "@lint:pint:fix",
             "@lint:cs:fix"
         ],
+        "hooks:install": "@php -r \"if (! file_exists('vendor/bin/captainhook')) { exit(0); } $command = escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg('vendor/bin/captainhook') . ' install --force --skip-existing'; passthru($command, $exitCode); exit($exitCode);\"",
         "check": [
             "@lint:all",
             "@test"
@@ -76,8 +77,8 @@
             "@lint:all",
             "@test:coverage"
         ],
-        "post-install-cmd": "captainhook install --force --skip-existing",
-        "post-update-cmd": "captainhook install --force --skip-existing"
+        "post-install-cmd": "@hooks:install",
+        "post-update-cmd": "@hooks:install"
     },
     "version": "1.0.0",
     "config": {

@@ -9,7 +9,7 @@ use Jooservices\LaravelRepository\Support\Order;
 trait HasOrder
 {
     /**
-     * @param  iterable<int|string, Order|'asc'|'desc'>  $orders
+     * @param  iterable<int|string|Order, Order|'asc'|'desc'>  $orders
      */
     public function orderBy(iterable $orders): static
     {

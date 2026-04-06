@@ -248,19 +248,27 @@ class RequestQueryParser
     {
         $result = [];
         foreach ($items as $item) {
-            if (is_array($item) && isset($item['column'])) {
-                $direction = $item['direction'] ?? 'asc';
-                $result[] = [
-                    'column' => (string) $item['column'],
-                    'direction' => is_string($direction) ? $direction : 'asc',
-                ];
-            } elseif (is_array($item) && count($item) >= 1) {
-                $direction = $item[1] ?? 'asc';
-                $result[] = [
-                    'column' => (string) $item[0],
-                    'direction' => is_string($direction) ? $direction : 'asc',
-                ];
+            if (! is_array($item) || empty($item)) {
+                continue;
             }
+
+            $column = $item['column'] ?? $item[0] ?? null;
+            if (! is_string($column)) {
+                continue;
+            }
+
+            $column = trim($column);
+            if ($column === '') {
+                continue;
+            }
+
+            $direction = $item['direction'] ?? $item[1] ?? 'asc';
+            $direction = is_string($direction) ? strtolower(trim($direction)) : 'asc';
+
+            $result[] = [
+                'column' => $column,
+                'direction' => in_array($direction, ['asc', 'desc'], true) ? $direction : 'asc',
+            ];
         }
 
         return $result;

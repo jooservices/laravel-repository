@@ -55,7 +55,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           draft: false
-          prerelease: false
+          prerelease: ${{ contains(github.ref_name, '-') }}
           generate_release_notes: true
           discussion_category_name: Releases
 
@@ -66,11 +66,12 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/v') && !contains(github.ref_name, '-')
     env:
       PACKAGIST_USERNAME: jooservices
-      PACKAGIST_TOKEN: ${{ secrets.PACKAGIST_TOKEN }}
       PACKAGIST_UPDATE_URL: https://packagist.org/api/update-package
       PACKAGE_REPOSITORY_URL: https://github.com/jooservices/laravel-repository
     steps:
       - name: Validate Packagist secrets
+        env:
+          PACKAGIST_TOKEN: ${{ secrets.PACKAGIST_TOKEN }}
         run: |
           if [ -z "$PACKAGIST_TOKEN" ]; then
             echo "::error::Missing PACKAGIST_TOKEN repository secret"
@@ -78,8 +79,14 @@ jobs:
           fi
 
       - name: Trigger Packagist update
+        env:
+          PACKAGIST_TOKEN: ${{ secrets.PACKAGIST_TOKEN }}
         run: |
           curl --fail --show-error --silent \
+            --connect-timeout 10 \
+            --max-time 60 \
+            --retry 3 \
+            --retry-all-errors \
             -X POST \
             -H 'content-type:application/json' \
             "${PACKAGIST_UPDATE_URL}?username=${PACKAGIST_USERNAME}" \

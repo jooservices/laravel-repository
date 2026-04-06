@@ -38,6 +38,7 @@ final class UserRepository extends EloquentRepository implements RepositoryInter
     }
 }
 
+$repository = app(UserRepository::class);
 $user = $repository->find($id);
 $users = $repository->filter(['status' => 'active'])->orderBy(['created_at' => 'desc'])->paginate(15);
 ```
@@ -65,6 +66,7 @@ Start with:
 - [Installation](docs/01-getting-started/installation.md)
 - [Quick Start](docs/01-getting-started/quick-start.md)
 - [Trait-Based Composition](docs/02-user-guide/trait-based-composition.md)
+- [Competitive Comparison And Roadmap](docs/12-competitive-comparison-and-roadmap.md)
 - [Risks, Legacy, and Gaps](docs/11-risks-legacy-and-gaps.md)
 
 ## AI Support
@@ -104,7 +106,7 @@ The CI baseline covers security checks, linting, tests with coverage artifacts, 
 
 Current external service integrations:
 
-- `Codecov` for CI coverage uploads
+- `Codecov` for CI coverage uploads when `CODECOV_TOKEN` is configured
 - `Packagist` for release-time package update notifications
 
 ## Changelog
