@@ -3,9 +3,6 @@ parameters:
     paths:
         - src
         - tests/Stubs
-    excludePaths:
-        - vendor
-        - build
     treatPhpDocTypesAsCertain: false
     reportUnmatchedIgnoredErrors: true
     checkMissingCallableSignature: true
