@@ -7,7 +7,7 @@
       "enabled": true,
       "actions": [
         {
-          "action": "\"vendor/bin/captainhook\" validate:commit-msg {{file}} --regex \"^(feat|fix|docs|chore|refactor|test|ci|build|perf|revert)(\\([^)]+\\))?: [A-Z].+\""
+          "action": "grep -Eq '^(feat|fix|docs|chore|refactor|test|ci|build|perf|revert)(\\([^)]+\\))?: [A-Z].+' {$FILE}"
         }
       ]
     },
