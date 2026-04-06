@@ -17,12 +17,15 @@
         "illuminate/http": "^12.0"
     },
     "require-dev": {
+        "captainhook/captainhook": "^5.23",
+        "captainhook/plugin-composer": "^5.3",
+        "friendsofphp/php-cs-fixer": "^3.65",
         "laravel/pint": "^1.0",
         "orchestra/testbench": "^10.0",
         "phpunit/phpunit": "^11.0",
-        "phpstan/phpstan": "^2.0",
-        "squizlabs/php_codesniffer": "^3.0",
-        "phpmd/phpmd": "^2.0"
+        "phpstan/phpstan": "~2.1.0",
+        "phpmd/phpmd": "^2.0",
+        "squizlabs/php_codesniffer": "^3.0"
     },
     "autoload": {
         "psr-4": {
@@ -42,25 +45,47 @@
         }
     },
     "scripts": {
-        "lint": [
-            "pint --test",
-            "@phpcs",
-            "@phpmd",
-            "@phpstan"
-        ],
-        "phpcs": "phpcs",
-        "phpmd": "phpmd src text phpmd.xml.dist",
-        "phpstan": "phpstan analyse --memory-limit=512M",
         "test": "phpunit",
-        "test:coverage": "phpunit --coverage-text",
-        "check": [
+        "test:coverage": "phpunit --coverage-html build/coverage/html --coverage-clover build/coverage/clover.xml",
+        "lint:pint": "pint --test",
+        "lint:pint:fix": "pint",
+        "lint:phpcs": "phpcs --standard=phpcs.xml.dist",
+        "lint:phpstan": "phpstan analyse --configuration=phpstan.neon.dist --memory-limit=512M",
+        "lint:phpmd": "php -d error_reporting=6143 vendor/bin/phpmd src text phpmd.xml.dist",
+        "lint:cs": "php-cs-fixer fix --config=.php-cs-fixer.dist.php --dry-run --diff --sequential",
+        "lint:cs:fix": "php-cs-fixer fix --config=.php-cs-fixer.dist.php --sequential",
+        "lint": [
+            "@lint:pint",
+            "@lint:phpcs",
+            "@lint:phpstan"
+        ],
+        "lint:all": [
             "@lint",
+            "@lint:phpmd",
+            "@lint:cs"
+        ],
+        "lint:fix": [
+            "@lint:pint:fix",
+            "@lint:cs:fix"
+        ],
+        "hooks:install": "if [ -x vendor/bin/captainhook ]; then vendor/bin/captainhook install --force --skip-existing; fi",
+        "check": [
+            "@lint:all",
+            "@test"
+        ],
+        "ci": [
+            "@lint:all",
             "@test:coverage"
-        ]
+        ],
+        "post-install-cmd": "@hooks:install",
+        "post-update-cmd": "@hooks:install"
     },
     "version": "1.0.0",
     "config": {
-        "sort-packages": true
+        "sort-packages": true,
+        "allow-plugins": {
+            "captainhook/plugin-composer": true
+        }
     },
     "minimum-stability": "dev",
     "prefer-stable": true

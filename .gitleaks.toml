@@ -1,0 +1,8 @@
+title = "jooservices/laravel-repository gitleaks config"
+
+[allowlist]
+description = "Allow known generated artifacts and vendor content"
+paths = [
+  '''^build/.*''',
+  '''^vendor/.*'''
+]

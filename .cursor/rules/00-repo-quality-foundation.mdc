@@ -1,0 +1,8 @@
+---
+description: Repository baseline for jooservices/laravel-repository
+alwaysApply: true
+---
+
+Read `AGENTS.md` first for repository policy.
+
+Keep the package trait-based, use the canonical composer command map, and update docs and tests whenever behavior or contributor workflow changes.

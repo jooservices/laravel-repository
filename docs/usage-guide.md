@@ -1,5 +1,13 @@
 # Usage guide
 
+This legacy page remains as a compatibility entry point. For the current docs tree, start with:
+
+- [Installation](./01-getting-started/installation.md)
+- [Quick Start](./01-getting-started/quick-start.md)
+- [Trait-Based Composition](./02-user-guide/trait-based-composition.md)
+- [CRUD, Filter, And Order](./02-user-guide/crud-filter-order.md)
+- [Request Query Support](./02-user-guide/request-query.md)
+
 ## Installation
 
 ### Requirements
@@ -219,7 +227,7 @@ Use it in `filter()`:
 
 ## Testing and quality
 
-Run the full check (style, PHPCS, PHPMD, PHPStan, tests with coverage):
+Run the full local validation set:
 
 ```bash
 composer check
@@ -228,12 +236,12 @@ composer check
 Or individually:
 
 ```bash
-composer lint           # Pint + PHPCS + PHPMD + PHPStan
-composer phpcs          # PHP CodeSniffer
-composer phpmd          # PHPMD
-composer phpstan        # PHPStan
+composer lint           # Pint + PHPCS + PHPStan
+composer lint:all       # Pint + PHPCS + PHPStan + PHPMD + PHP-CS-Fixer dry-run
+composer lint:fix       # Pint + PHP-CS-Fixer
 composer test           # PHPUnit
-composer test:coverage  # PHPUnit with coverage
+composer test:coverage  # PHPUnit with coverage artifacts
+composer ci             # lint:all + test:coverage
 ```
 
 ---

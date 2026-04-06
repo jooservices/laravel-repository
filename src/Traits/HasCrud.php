@@ -19,16 +19,25 @@ trait HasCrud
         return $this->getModel()->newQuery()->findOrFail($id);
     }
 
+    /**
+     * @return Collection<int, Model>
+     */
     public function all(): Collection
     {
         return $this->getModel()->newQuery()->get();
     }
 
+    /**
+     * @param  array<string, mixed>  $data
+     */
     public function create(array $data): Model
     {
         return $this->getModel()->newQuery()->create($data);
     }
 
+    /**
+     * @param  array<string, mixed>  $data
+     */
     public function update(int|string $id, array $data): bool
     {
         $model = $this->findOrFail($id);
@@ -40,6 +49,6 @@ trait HasCrud
     {
         $model = $this->findOrFail($id);
 
-        return $model->delete();
+        return (bool) $model->delete();
     }
 }

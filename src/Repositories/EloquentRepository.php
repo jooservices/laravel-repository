@@ -9,10 +9,13 @@ use Illuminate\Database\Eloquent\Model;
 
 class EloquentRepository
 {
+    /**
+     * @var Builder<Model>|null
+     */
     protected ?Builder $query = null;
 
     public function __construct(
-        protected Model $model
+        protected Model $model,
     ) {}
 
     public function getModel(): Model
@@ -20,11 +23,17 @@ class EloquentRepository
         return $this->model;
     }
 
+    /**
+     * @return Builder<Model>
+     */
     public function newQuery(): Builder
     {
         return $this->model->newQuery();
     }
 
+    /**
+     * @return Builder<Model>
+     */
     protected function getQuery(): Builder
     {
         return $this->query ??= $this->newQuery();

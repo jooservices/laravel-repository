@@ -1,67 +1,113 @@
-# Laravel Repository
+# JOOservices Laravel Repository
 
-Base repositories with CRUD, filtering, ordering, and query-from-request for Laravel 12. Built with SOLID, KISS, DRY, and YAGNI. Use only the traits you need.
+The JOOservices Laravel Repository package is a PHP 8.5+ Laravel package for trait-based repository composition, CRUD support, filter and order pipelines, and request-driven query assembly.
 
-## Requirements
+Package name: `jooservices/laravel-repository`
 
-- PHP ^8.5
-- Laravel ^12.0
-- illuminate/contracts, illuminate/database, illuminate/support, illuminate/http ^12.0
-
-## Installation
+## Install
 
 ```bash
 composer require jooservices/laravel-repository
 ```
 
-The package registers its service provider automatically. Optionally publish config:
+Optionally publish the package config:
 
 ```bash
 php artisan vendor:publish --tag=laravel-repository-config
 ```
 
-## Documentation
-
-Full documentation lives in the **[./docs](docs/)** folder:
-
-| Document | Description |
-|----------|-------------|
-| [**Architecture**](docs/architecture.md) | Package structure, layers, interfaces, and design principles |
-| [**Process & logic flow**](docs/process-flow.md) | Data and request flow with diagrams (including Mermaid) |
-| [**Usage guide**](docs/usage-guide.md) | Installation, configuration, trait selection, CRUD, filter/order, query-from-request, and testing |
-
-Quick links from the docs:
-
-- [Trait-based composition](docs/usage-guide.md#trait-based-composition) — which traits to use for which needs
-- [Creating a repository](docs/usage-guide.md#creating-a-repository)
-- [CRUD](docs/usage-guide.md#crud) · [Filter and order](docs/usage-guide.md#filter-and-order) · [Query from request](docs/usage-guide.md#query-from-request)
-- [Testing and quality](docs/usage-guide.md#testing-and-quality)
-
 ## Quick example
 
 ```php
+use App\Models\User;
 use Jooservices\LaravelRepository\Contracts\RepositoryInterface;
 use Jooservices\LaravelRepository\Repositories\EloquentRepository;
 use Jooservices\LaravelRepository\Traits\HasCrud;
 use Jooservices\LaravelRepository\Traits\HasFilter;
 use Jooservices\LaravelRepository\Traits\HasOrder;
 
-class UserRepository extends EloquentRepository implements RepositoryInterface
+final class UserRepository extends EloquentRepository implements RepositoryInterface
 {
-    use HasCrud, HasFilter, HasOrder;
+    use HasCrud;
+    use HasFilter;
+    use HasOrder;
 
     public function __construct(User $model)
     {
         parent::__construct($model);
     }
 }
+
+$repository = app(UserRepository::class);
+$user = $repository->find($id);
+$users = $repository->filter(['status' => 'active'])->orderBy(['created_at' => 'desc'])->paginate(15);
 ```
 
-```php
-$user = $repo->find($id);
-$users = $repo->filter(['status' => 'active'])->orderBy(['created_at' => 'desc'])->paginate(15);
-$users = $repo->fromRequest($request)->paginate(15);  // with HasRequestQuery
+## What is supported today
+
+- trait-based repository composition through segregated contracts and traits
+- CRUD operations through `HasCrud`
+- filter chains, collection retrieval, and pagination through `HasFilter`
+- ordering through `HasOrder`
+- request-driven query parsing through `HasRequestQuery`
+- reusable `Filter` and `Order` value objects
+
+## Important current boundaries
+
+- repositories opt into behavior through traits; no feature is globally implied
+- query state is lazily created and reset after terminal filter operations
+- `RequestQueryParser` supports only the implemented clause families
+
+## Documentation
+
+Start with:
+
+- [Documentation Hub](docs/README.md)
+- [Installation](docs/01-getting-started/installation.md)
+- [Quick Start](docs/01-getting-started/quick-start.md)
+- [Trait-Based Composition](docs/02-user-guide/trait-based-composition.md)
+- [Competitive Comparison And Roadmap](docs/12-competitive-comparison-and-roadmap.md)
+- [Risks, Legacy, and Gaps](docs/11-risks-legacy-and-gaps.md)
+
+## AI Support
+
+This repository includes an AI skill pack for agents working in Cursor, Claude Code, VS Code, JetBrains, and Antigravity.
+
+Start with:
+
+- [AGENTS.md](AGENTS.md)
+- [CLAUDE.md](CLAUDE.md)
+- [AI Skills Map](ai/skills/README.md)
+- [AI Skills Usage Guide](ai/skills/USAGE.md)
+
+The canonical skill source lives in [`.github/skills/`](.github/skills/), with adapter layers for each supported AI environment.
+
+## Development
+
+```bash
+composer lint:all
+composer test
 ```
+
+Contributor workflow details live in:
+
+- [Setup](docs/04-development/setup.md)
+- [Coding Standards](docs/04-development/coding-standards.md)
+- [Testing](docs/04-development/testing.md)
+- [CI/CD](docs/04-development/ci-cd.md)
+- [Release Process](docs/04-development/release-process.md)
+- [AI Skills](docs/04-development/ai-skills.md)
+
+## GitHub Actions and Services
+
+The repository workflow set is designed to include CI, release, PR labeler, semantic PR title, scorecard, and secret-scanning workflows.
+
+The CI baseline covers security checks, linting, tests with coverage artifacts, and optional dependency review. Release is tag-driven through `vX.Y.Z` tags.
+
+Current external service integrations:
+
+- `Codecov` for CI coverage uploads when `CODECOV_TOKEN` is configured
+- `Packagist` for release-time package update notifications
 
 ## Changelog
 
@@ -69,4 +115,4 @@ See [CHANGELOG.md](CHANGELOG.md) for version history.
 
 ## License
 
-MIT.
+This project is licensed under the [MIT License](LICENSE).

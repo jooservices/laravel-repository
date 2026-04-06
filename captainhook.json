@@ -1,0 +1,43 @@
+{
+  "config": {
+    "bootstrap": "vendor/autoload.php"
+  },
+  "hooks": {
+    "commit-msg": {
+      "enabled": true,
+      "actions": [
+        {
+          "action": "grep -Eq '^(feat|fix|docs|chore|refactor|test|ci|build|perf|revert)(\\([^)]+\\))?: [A-Z].+' {$FILE}"
+        }
+      ]
+    },
+    "pre-commit": {
+      "enabled": true,
+      "actions": [
+        {
+          "action": "command -v gitleaks >/dev/null 2>&1 || { echo 'Install gitleaks and make it available on PATH before running repository hooks.'; exit 1; }; gitleaks protect --staged --redact"
+        },
+        {
+          "action": "composer lint:pint"
+        },
+        {
+          "action": "composer lint:phpcs"
+        },
+        {
+          "action": "composer lint:phpstan"
+        }
+      ]
+    },
+    "pre-push": {
+      "enabled": true,
+      "actions": [
+        {
+          "action": "command -v gitleaks >/dev/null 2>&1 || { echo 'Install gitleaks and make it available on PATH before running repository hooks.'; exit 1; }; gitleaks detect --redact"
+        },
+        {
+          "action": "composer test"
+        }
+      ]
+    }
+  }
+}

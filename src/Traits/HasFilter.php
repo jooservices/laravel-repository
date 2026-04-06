@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Jooservices\LaravelRepository\Traits;
 
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Jooservices\LaravelRepository\Contracts\FilterInterface;
 
@@ -27,6 +28,9 @@ trait HasFilter
         return $this;
     }
 
+    /**
+     * @return Collection<int, Model>
+     */
     public function get(): Collection
     {
         $result = $this->getQuery()->get();
@@ -35,6 +39,9 @@ trait HasFilter
         return $result;
     }
 
+    /**
+     * @return LengthAwarePaginator<int, Model>
+     */
     public function paginate(int $perPage = 15): LengthAwarePaginator
     {
         $result = $this->getQuery()->paginate($perPage);

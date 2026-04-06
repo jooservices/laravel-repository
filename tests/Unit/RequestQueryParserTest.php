@@ -168,6 +168,26 @@ class RequestQueryParserTest extends TestCase
     }
 
     #[Test]
+    public function it_normalizes_order_direction_and_skips_empty_columns(): void
+    {
+        $data = [
+            'order' => [
+                ['column' => ' created_at ', 'direction' => 'DESC'],
+                ['column' => 'name', 'direction' => 'sideways'],
+                ['column' => '   ', 'direction' => 'desc'],
+                [123, 'desc'],
+            ],
+        ];
+        $result = RequestQueryParser::parse($data);
+
+        $this->assertCount(2, $result['order']);
+        $this->assertSame('created_at', $result['order'][0]['column']);
+        $this->assertSame('desc', $result['order'][0]['direction']);
+        $this->assertSame('name', $result['order'][1]['column']);
+        $this->assertSame('asc', $result['order'][1]['direction']);
+    }
+
+    #[Test]
     public function it_parses_where_in_with_value_key(): void
     {
         $data = ['whereIn' => [['column' => 'status', 'value' => 'single']]];

@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Jooservices\LaravelRepository\Tests\Unit;
 
+use Generator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use IteratorAggregate;
 use Jooservices\LaravelRepository\Support\Order;
 use Jooservices\LaravelRepository\Tests\Stubs\UserRepositoryStub;
 use Jooservices\LaravelRepository\Tests\Stubs\UserStub;
@@ -67,11 +69,11 @@ class HasOrderTest extends TestCase
         $this->repo->create(['name' => 'Z', 'email' => 'z@x.com', 'status' => 'active']);
         $this->repo->create(['name' => 'A', 'email' => 'a@x.com', 'status' => 'active']);
         $order = new Order('name', 'asc');
-        $iterable = new class($order) implements \IteratorAggregate
+        $iterable = new class($order) implements IteratorAggregate
         {
             public function __construct(private readonly Order $order) {}
 
-            public function getIterator(): \Generator
+            public function getIterator(): Generator
             {
                 yield $this->order => 'asc';
             }
