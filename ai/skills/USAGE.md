@@ -33,6 +33,23 @@ This pack is designed to help agents:
 
 ## Common task recipes
 
+### Change request-query behavior
+
+Use:
+
+- `architecture-and-design-principles`
+- `class-purpose-and-module-map`
+- `documentation-sync`
+- `coverage-and-lint-guard`
+
+Check that the change stays truthful to the current request-query surface:
+
+- allowlists and strict mode stay opt-in
+- aliases and scope definitions remain explicit metadata, not implicit global behavior
+- aggregate include helpers and value rules remain explicit metadata, not implicit global behavior
+- `RequestQueryParser` docs list only implemented clause families
+- tests cover parser output, permissive behavior, and strict-mode failures
+
 ### Update docs
 
 Use:
@@ -65,6 +82,14 @@ Use:
 - Baseline instructions: `.github/copilot-instructions.md`
 - Extra instructions: `.github/instructions/repo-quality.instructions.md`
 - Prompt files: `.github/prompts/*.prompt.md`
+
+When request-query behavior changes, keep these docs in sync at the same time:
+
+- `README.md`
+- `docs/README.md`
+- `docs/02-user-guide/request-query.md`
+- `docs/12-competitive-comparison-and-roadmap.md`
+- AI-facing guidance files under `ai/skills/` and `.github/`
 
 ### Cursor
 

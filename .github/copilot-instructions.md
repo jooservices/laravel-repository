@@ -14,5 +14,17 @@ Repository truth to preserve:
 
 - `EloquentRepository` owns the model and lazy query lifecycle.
 - Traits own behavior slices and remain intentionally composable.
-- `RequestQueryParser` documents only implemented clause families.
+- `RequestQueryParser` documents only implemented clause families, including the current request-query metadata and relation-count surfaces.
 - Repositories opt into behavior through interfaces and traits; no feature is globally implied.
+
+Current request-query surfaces to keep truthful in docs and examples:
+
+- fields and named request filters
+- callback micro filters
+- allowlists and strict mode
+- filter aliases and relation aliases
+- scope filters and scope definitions
+- relation count clauses
+- eager-load includes plus derived `Count` and `Exists` helpers and metadata-defined aggregate helpers
+- value-normalization rules for filters, named filters, scopes, and relation filters
+- nested relation filters such as `whereHas`, `orWhereHas`, `whereDoesntHave`, and `orWhereDoesntHave`

@@ -20,6 +20,6 @@ readonly class Filter implements FilterInterface
      */
     public function apply(Builder $query): void
     {
-        $query->where($this->field, $this->operator, $this->value);
+        QueryOperator::apply($query, 'where', $this->field, $this->operator, $this->value);
     }
 }

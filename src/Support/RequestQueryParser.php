@@ -10,6 +10,18 @@ use Illuminate\Http\Request;
  * @phpstan-type WhereClause array{column: string, operator: string, value: mixed}
  * @phpstan-type WhereInClause array{column: string, values: list<mixed>}
  * @phpstan-type WhereBetweenClause array{column: string, range: list<mixed>}
+ * @phpstan-type ScopeClause array{name: string, parameters: list<mixed>}
+ * @phpstan-type HasClause array{relation: string, operator: string, count: int}
+ * @phpstan-type NamedFilters array<string, mixed>
+ * @phpstan-type WhereHasClause array{
+ *     relation: string,
+ *     where: list<WhereClause>,
+ *     orWhere: list<WhereClause>,
+ *     whereIn: list<WhereInClause>,
+ *     whereBetween: list<WhereBetweenClause>,
+ *     whereNull: list<string>,
+ *     whereNotNull: list<string>
+ * }
  * @phpstan-type OrderClause array{column: string, direction: string}
  * @phpstan-type QueryClauses array{
  *     where: list<WhereClause>,
@@ -18,6 +30,14 @@ use Illuminate\Http\Request;
  *     whereBetween: list<WhereBetweenClause>,
  *     whereNull: list<string>,
  *     whereNotNull: list<string>,
+ *     fields: list<string>,
+ *     filters: NamedFilters,
+ *     scope: list<ScopeClause>,
+ *     has: list<HasClause>,
+ *     whereHas: list<WhereHasClause>,
+ *     orWhereHas: list<WhereHasClause>,
+ *     whereDoesntHave: list<WhereHasClause>,
+ *     orWhereDoesntHave: list<WhereHasClause>,
  *     with: list<string>,
  *     order: list<OrderClause>
  * }
@@ -38,26 +58,23 @@ class RequestQueryParser
             $data = $data['query'];
         }
 
-        $where = $data['where'] ?? [];
-        $orWhere = $data['orWhere'] ?? [];
-        $whereIn = $data['whereIn'] ?? [];
-        $whereBetween = $data['whereBetween'] ?? [];
-        $whereNull = $data['whereNull'] ?? [];
-        $whereNotNull = $data['whereNotNull'] ?? [];
-        $with = $data['with'] ?? [];
-        $order = $data['order'] ?? [];
-
         return [
-            'where' => self::parseWhere(is_array($where) ? $where : []),
-            'orWhere' => self::parseWhere(is_array($orWhere) ? $orWhere : []),
-            'whereIn' => self::parseWhereIn(is_array($whereIn) ? $whereIn : []),
-            'whereBetween' => self::parseWhereBetween(is_array($whereBetween) ? $whereBetween : []),
-            'whereNull' => self::parseWhereNull(is_array($whereNull) ? $whereNull : []),
-            'whereNotNull' => self::parseWhereNotNull(is_array($whereNotNull) ? $whereNotNull : []),
-            'with' => self::parseWith(
-                is_array($with) ? $with : [$with],
-            ),
-            'order' => self::parseOrder(is_array($order) ? $order : []),
+            'where' => self::parseWhere(self::arrayValue($data, 'where')),
+            'orWhere' => self::parseWhere(self::arrayValue($data, 'orWhere')),
+            'whereIn' => self::parseWhereIn(self::arrayValue($data, 'whereIn')),
+            'whereBetween' => self::parseWhereBetween(self::arrayValue($data, 'whereBetween')),
+            'whereNull' => self::parseWhereNull(self::arrayValue($data, 'whereNull')),
+            'whereNotNull' => self::parseWhereNotNull(self::arrayValue($data, 'whereNotNull')),
+            'fields' => self::parseFields(self::listValue($data, 'fields')),
+            'filters' => self::parseFilters(self::arrayValue($data, 'filters')),
+            'scope' => self::parseScope(self::listValue($data, 'scope')),
+            'has' => RequestQueryHasParser::parse(self::arrayValue($data, 'has')),
+            'whereHas' => self::parseRelationClauses(self::arrayValue($data, 'whereHas')),
+            'orWhereHas' => self::parseRelationClauses(self::arrayValue($data, 'orWhereHas')),
+            'whereDoesntHave' => self::parseRelationClauses(self::arrayValue($data, 'whereDoesntHave')),
+            'orWhereDoesntHave' => self::parseRelationClauses(self::arrayValue($data, 'orWhereDoesntHave')),
+            'with' => self::parseWith(self::listValue($data, 'with')),
+            'order' => self::parseOrder(self::arrayValue($data, 'order')),
         ];
     }
 
@@ -95,6 +112,26 @@ class RequestQueryParser
     }
 
     /**
+     * @param  array<string, mixed>  $data
+     * @return array<int|string, mixed>
+     */
+    private static function arrayValue(array $data, string $key): array
+    {
+        return is_array($data[$key] ?? null) ? $data[$key] : [];
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return list<mixed>
+     */
+    private static function listValue(array $data, string $key): array
+    {
+        $value = $data[$key] ?? [];
+
+        return is_array($value) ? array_values($value) : [$value];
+    }
+
+    /**
      * @return QueryClauses
      */
     private static function emptyClauses(): array
@@ -106,6 +143,14 @@ class RequestQueryParser
             'whereBetween' => [],
             'whereNull' => [],
             'whereNotNull' => [],
+            'fields' => [],
+            'filters' => [],
+            'scope' => [],
+            'has' => [],
+            'whereHas' => [],
+            'orWhereHas' => [],
+            'whereDoesntHave' => [],
+            'orWhereDoesntHave' => [],
             'with' => [],
             'order' => [],
         ];
@@ -118,31 +163,54 @@ class RequestQueryParser
     private static function parseWhere(array $items): array
     {
         $result = [];
+
         foreach ($items as $index => $item) {
-            if (! is_array($item)) {
-                continue;
+            $parsed = self::parseWhereItem($index, $item);
+            if ($parsed !== null) {
+                $result[] = $parsed;
             }
-            if (isset($item['column'], $item['value'])) {
-                $operator = $item['operator'] ?? '=';
-                $result[] = [
-                    'column' => (string) $item['column'],
-                    'operator' => is_string($operator) ? $operator : '=',
-                    'value' => $item['value'],
+        }
+
+        return $result;
+    }
+
+    /**
+     * @return WhereClause|null
+     */
+    private static function parseWhereItem(int|string $index, mixed $item): ?array
+    {
+        $result = null;
+
+        if (! is_array($item)) {
+            return $result;
+        }
+
+        if (isset($item['column'], $item['value'])) {
+            $operator = $item['operator'] ?? '=';
+
+            $result = [
+                'column' => (string) $item['column'],
+                'operator' => is_string($operator) ? $operator : '=',
+                'value' => $item['value'],
+            ];
+        } elseif (is_int($index) && count($item) >= 2) {
+            $column = $item[0] ?? null;
+            if (! is_string($column)) {
+                return null;
+            }
+
+            $operator = is_string($item[1] ?? null) ? $item[1] : '=';
+            $result = count($item) === 3
+                ? [
+                    'column' => $column,
+                    'operator' => $operator,
+                    'value' => $item[2] ?? null,
+                ]
+                : [
+                    'column' => $column,
+                    'operator' => '=',
+                    'value' => $item[1] ?? null,
                 ];
-            } elseif (is_int($index) && count($item) >= 2) {
-                $column = $item[0];
-                if (! is_string($column)) {
-                    continue;
-                }
-                if (count($item) === 3) {
-                    $operator = is_string($item[1] ?? null) ? $item[1] : '=';
-                    $value = $item[2] ?? null;
-                } else {
-                    $value = $item[1] ?? null;
-                    $operator = '=';
-                }
-                $result[] = ['column' => $column, 'operator' => $operator, 'value' => $value];
-            }
         }
 
         return $result;
@@ -213,12 +281,52 @@ class RequestQueryParser
      */
     private static function parseWhereNotNull(array $items): array
     {
+        return self::parseWhereNull($items);
+    }
+
+    /**
+     * @param  array<int, mixed>  $items
+     * @return list<string>
+     */
+    private static function parseFields(array $items): array
+    {
         $result = [];
-        foreach ($items as $item) {
-            $column = is_array($item) ? ($item['column'] ?? $item[0] ?? null) : $item;
-            if (is_string($column)) {
-                $result[] = $column;
+
+        foreach ($items as $field) {
+            if (! is_string($field)) {
+                continue;
             }
+
+            foreach (explode(',', $field) as $segment) {
+                $segment = trim($segment);
+                if ($segment !== '') {
+                    $result[] = $segment;
+                }
+            }
+        }
+
+        return array_values(array_unique($result));
+    }
+
+    /**
+     * @param  array<int|string, mixed>  $items
+     * @return NamedFilters
+     */
+    private static function parseFilters(array $items): array
+    {
+        $result = [];
+
+        foreach ($items as $name => $value) {
+            if (! is_string($name)) {
+                continue;
+            }
+
+            $name = trim($name);
+            if ($name === '') {
+                continue;
+            }
+
+            $result[$name] = $value;
         }
 
         return $result;
@@ -238,6 +346,107 @@ class RequestQueryParser
         }
 
         return $result;
+    }
+
+    /**
+     * @param  array<int|string, mixed>  $items
+     * @return list<ScopeClause>
+     */
+    private static function parseScope(array $items): array
+    {
+        $result = [];
+
+        foreach ($items as $item) {
+            if (is_string($item)) {
+                $name = trim($item);
+                if ($name !== '') {
+                    $result[] = ['name' => $name, 'parameters' => []];
+                }
+
+                continue;
+            }
+
+            if (! is_array($item) || $item === []) {
+                continue;
+            }
+
+            $name = $item['name'] ?? $item[0] ?? null;
+            if (! is_string($name)) {
+                continue;
+            }
+
+            $name = trim($name);
+            if ($name === '') {
+                continue;
+            }
+
+            $parameters = $item['parameters'] ?? array_slice(array_values($item), 1);
+            $result[] = [
+                'name' => $name,
+                'parameters' => is_array($parameters) ? array_values($parameters) : [$parameters],
+            ];
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param  array<int|string, mixed>  $items
+     * @return list<WhereHasClause>
+     */
+    private static function parseRelationClauses(array $items): array
+    {
+        $result = [];
+
+        foreach ($items as $item) {
+            $parsed = self::parseWhereHasItem($item);
+            if ($parsed !== null) {
+                $result[] = $parsed;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * @return WhereHasClause|null
+     */
+    private static function parseWhereHasItem(mixed $item): ?array
+    {
+        $result = null;
+
+        if (! is_array($item)) {
+            return $result;
+        }
+
+        $relation = $item['relation'] ?? $item[0] ?? null;
+        if (! is_string($relation)) {
+            return $result;
+        }
+
+        $relation = trim($relation);
+        if ($relation !== '') {
+            $result = [
+                'relation' => $relation,
+                'where' => self::parseWhere(self::arrayClause($item, 'where')),
+                'orWhere' => self::parseWhere(self::arrayClause($item, 'orWhere')),
+                'whereIn' => self::parseWhereIn(self::arrayClause($item, 'whereIn')),
+                'whereBetween' => self::parseWhereBetween(self::arrayClause($item, 'whereBetween')),
+                'whereNull' => self::parseWhereNull(self::arrayClause($item, 'whereNull')),
+                'whereNotNull' => self::parseWhereNotNull(self::arrayClause($item, 'whereNotNull')),
+            ];
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param  array<int|string, mixed>  $item
+     * @return array<int|string, mixed>
+     */
+    private static function arrayClause(array $item, string $key): array
+    {
+        return is_array($item[$key] ?? null) ? $item[$key] : [];
     }
 
     /**

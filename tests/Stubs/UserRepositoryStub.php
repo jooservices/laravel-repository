@@ -9,6 +9,7 @@ use Jooservices\LaravelRepository\Repositories\EloquentRepository;
 use Jooservices\LaravelRepository\Traits\HasCrud;
 use Jooservices\LaravelRepository\Traits\HasFilter;
 use Jooservices\LaravelRepository\Traits\HasOrder;
+use Jooservices\LaravelRepository\Traits\HasRead;
 use Jooservices\LaravelRepository\Traits\HasRequestQuery;
 
 class UserRepositoryStub extends EloquentRepository implements RepositoryInterface
@@ -16,10 +17,6 @@ class UserRepositoryStub extends EloquentRepository implements RepositoryInterfa
     use HasCrud;
     use HasFilter;
     use HasOrder;
+    use HasRead;
     use HasRequestQuery;
-
-    public function __construct(UserStub $model)
-    {
-        parent::__construct($model);
-    }
 }

@@ -8,6 +8,7 @@ The package provides:
 
 - `EloquentRepository` for model ownership and lazy query lifecycle
 - opt-in CRUD, filtering, ordering, and request-query traits
+- opt-in request-query aliases, scope definitions, aggregate include helpers, value-normalization rules, and relation count helpers
 - reusable `Filter` and `Order` value objects
 - `RequestQueryParser` for the implemented request clause families
 
@@ -50,6 +51,7 @@ The package provides:
 ### Maintenance
 
 - [Risks, Legacy, And Gaps](./11-risks-legacy-and-gaps.md)
+- [Competitive Comparison And Roadmap](./12-competitive-comparison-and-roadmap.md)
 
 ## Compatibility pages
 

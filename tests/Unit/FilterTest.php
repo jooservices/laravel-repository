@@ -35,4 +35,27 @@ class FilterTest extends TestCase
         $filter->apply($query);
         $this->assertStringContainsString('name', $query->toSql());
     }
+
+    #[Test]
+    public function it_applies_semantic_partial_operator(): void
+    {
+        $filter = new Filter('name', 'john', 'partial');
+
+        $query = UserStub::query();
+        $filter->apply($query);
+
+        $this->assertStringContainsString('like', strtolower($query->toSql()));
+        $this->assertSame('%john%', $query->getBindings()[0]);
+    }
+
+    #[Test]
+    public function it_applies_semantic_begins_with_operator(): void
+    {
+        $filter = new Filter('email', 'admin', 'beginsWith');
+
+        $query = UserStub::query();
+        $filter->apply($query);
+
+        $this->assertSame('admin%', $query->getBindings()[0]);
+    }
 }
