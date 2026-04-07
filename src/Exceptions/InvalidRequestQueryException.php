@@ -81,31 +81,32 @@ class InvalidRequestQueryException extends RepositoryException
     /**
      * @param  list<string>  $allowed
      */
-    public static function disallowedRelationCount(string $relation, array $allowed): self
-    {
+    public static function disallowedRelationDetail(
+        string $type,
+        string $relation,
+        array $allowed,
+        ?string $column = null,
+    ): self {
+        if ($column !== null) {
+            return new self(sprintf(
+                'Column [%s] is not allowed for relation [%s]. Allowed columns: %s.',
+                $column,
+                $relation,
+                self::formatAllowed($allowed),
+            ));
+        }
+
         return new self(sprintf(
-            'Relation count [%s] is not allowed. Allowed relations: %s.',
+            'Relation %s [%s] is not allowed. Allowed relations: %s.',
+            $type,
             $relation,
             self::formatAllowed($allowed),
         ));
     }
 
-    /**
-     * @param  list<string>  $allowed
-     */
-    public static function disallowedRelationColumn(string $relation, string $column, array $allowed): self
+    public static function unknownTarget(string $type, string $name): self
     {
-        return new self(sprintf(
-            'Column [%s] is not allowed for relation [%s]. Allowed columns: %s.',
-            $column,
-            $relation,
-            self::formatAllowed($allowed),
-        ));
-    }
-
-    public static function unknownScope(string $scope): self
-    {
-        return new self(sprintf('Scope [%s] does not exist on the repository model.', $scope));
+        return new self(sprintf('%s [%s] does not exist on the repository model.', $type, $name));
     }
 
     public static function invalidScopeParameters(string $scope, int $expected, int $actual): self
@@ -116,11 +117,6 @@ class InvalidRequestQueryException extends RepositoryException
             $expected,
             $actual,
         ));
-    }
-
-    public static function unknownRelation(string $relation): self
-    {
-        return new self(sprintf('Relation [%s] does not exist on the repository model.', $relation));
     }
 
     /**
@@ -147,14 +143,13 @@ class InvalidRequestQueryException extends RepositoryException
         ));
     }
 
-    public static function invalidClauseShape(string $clause): self
+    public static function invalidClause(string $clause = ''): self
     {
-        return new self(sprintf('Request query clause [%s] must be an array.', $clause));
-    }
+        if ($clause === '') {
+            return new self('Request query payload must be an array.');
+        }
 
-    public static function invalidPayload(): self
-    {
-        return new self('Request query payload must be an array.');
+        return new self(sprintf('Request query clause [%s] must be an array.', $clause));
     }
 
     /**

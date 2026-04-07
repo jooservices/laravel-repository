@@ -66,7 +66,7 @@ class AllowedUserRepositoryStub extends EloquentRepository implements ARQ, CPR, 
         $this->allowedSorts = $allowedSorts;
         $this->allowedIncludes = $allowedIncludes;
         $this->allowedScopes = $allowedScopes;
-        $this->allowedRelationFilters = $allowedRelationFilters;
+        $this->relationFilters = $allowedRelationFilters;
         $this->requestQueryStrict = $strict;
     }
 

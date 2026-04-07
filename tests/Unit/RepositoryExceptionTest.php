@@ -36,7 +36,7 @@ class RepositoryExceptionTest extends TestCase
         );
         $this->assertSame(
             'Scope [active] does not exist on the repository model.',
-            InvalidRequestQueryException::unknownScope('active')->getMessage(),
+            InvalidRequestQueryException::unknownTarget('Scope', 'active')->getMessage(),
         );
 
         $supportedClauses = [
@@ -61,6 +61,14 @@ class RepositoryExceptionTest extends TestCase
         $this->assertSame(
             $unsupportedClauseMessage,
             InvalidRequestQueryException::unsupportedClause('aggregate', $supportedClauses)->getMessage(),
+        );
+        $this->assertSame(
+            'Relation count [posts] is not allowed. Allowed relations: profile.',
+            InvalidRequestQueryException::disallowedRelationDetail('count', 'posts', ['profile'])->getMessage(),
+        );
+        $this->assertSame(
+            'Column [votes] is not allowed for relation [posts]. Allowed columns: [none].',
+            InvalidRequestQueryException::disallowedRelationDetail('column', 'posts', [], 'votes')->getMessage(),
         );
     }
 }

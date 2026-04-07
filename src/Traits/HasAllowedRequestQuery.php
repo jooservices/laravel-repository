@@ -34,7 +34,7 @@ trait HasAllowedRequestQuery
     /**
      * @var array<string, list<mixed>>|null
      */
-    protected ?array $allowedRelationFilters = null;
+    protected ?array $relationFilters = null;
 
     protected ?bool $requestQueryStrict = null;
 
@@ -83,13 +83,13 @@ trait HasAllowedRequestQuery
      */
     public function allowedRelationFilters(): ?array
     {
-        if ($this->allowedRelationFilters === null) {
+        if ($this->relationFilters === null) {
             return null;
         }
 
         $normalized = [];
 
-        foreach ($this->allowedRelationFilters as $relation => $columns) {
+        foreach ($this->relationFilters as $relation => $columns) {
             if (! is_string($relation)) {
                 continue;
             }
@@ -100,7 +100,7 @@ trait HasAllowedRequestQuery
             }
 
             $normalizedColumns = $this->normalizeAllowlist(is_array($columns) ? $columns : [$columns]);
-            if ($normalizedColumns === null) {
+            if ($normalizedColumns === []) {
                 continue;
             }
 

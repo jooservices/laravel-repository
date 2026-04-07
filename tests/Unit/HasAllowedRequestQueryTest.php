@@ -200,6 +200,26 @@ class HasAllowedRequestQueryTest extends TestCase
     }
 
     #[Test]
+    public function it_defaults_to_non_strict_mode_and_normalizes_relation_filters(): void
+    {
+        config()->set('laravel-repository.request_query.strict', false);
+
+        $repo = new AllowedUserRepositoryStub(new UserStub, null, null, null, null, null, [
+            'posts' => ['status', '', 'votes'],
+            1 => ['ignored'],
+            '   ' => ['ignored'],
+            'profile' => null,
+            'account' => 'id',
+        ]);
+
+        $this->assertFalse($repo->isRequestQueryStrict());
+        $this->assertSame([
+            'posts' => ['status', 'votes'],
+            'account' => ['id'],
+        ], $repo->allowedRelationFilters());
+    }
+
+    #[Test]
     public function it_throws_for_disallowed_scopes_in_strict_mode(): void
     {
         $repo = new AllowedUserRepositoryStub(new UserStub, null, null, null, true, ['active']);

@@ -100,7 +100,7 @@ trait HasRequestQuery
 
         if (! is_array($data)) {
             if ($this->requestQueryStrictMode()) {
-                throw InvalidRequestQueryException::invalidPayload();
+                throw InvalidRequestQueryException::invalidClause();
             }
 
             return [];
@@ -128,7 +128,7 @@ trait HasRequestQuery
             }
 
             if (in_array($clause, self::ARRAY_ONLY_REQUEST_QUERY_CLAUSES, true) && ! is_array($value)) {
-                throw InvalidRequestQueryException::invalidClauseShape($clause);
+                throw InvalidRequestQueryException::invalidClause($clause);
             }
         }
     }
@@ -346,7 +346,7 @@ trait HasRequestQuery
 
             if (! $this->relationExists($relation)) {
                 if ($this->requestQueryStrictMode()) {
-                    throw InvalidRequestQueryException::unknownRelation($relation);
+                    throw InvalidRequestQueryException::unknownTarget('Relation', $relation);
                 }
 
                 continue;
@@ -380,7 +380,7 @@ trait HasRequestQuery
 
             if (! $this->scopeExists($definition['scope'])) {
                 if ($this->requestQueryStrictMode()) {
-                    throw InvalidRequestQueryException::unknownScope($definition['scope']);
+                    throw InvalidRequestQueryException::unknownTarget('Scope', $definition['scope']);
                 }
 
                 continue;
@@ -406,7 +406,7 @@ trait HasRequestQuery
 
             if (! $this->relationExists($relation)) {
                 if ($this->requestQueryStrictMode()) {
-                    throw InvalidRequestQueryException::unknownRelation($relation);
+                    throw InvalidRequestQueryException::unknownTarget('Relation', $relation);
                 }
 
                 continue;
@@ -508,7 +508,7 @@ trait HasRequestQuery
 
             if (! $this->relationExists($relation)) {
                 if ($this->requestQueryStrictMode()) {
-                    throw InvalidRequestQueryException::unknownRelation($relation);
+                    throw InvalidRequestQueryException::unknownTarget('Relation', $relation);
                 }
 
                 continue;
@@ -721,7 +721,7 @@ trait HasRequestQuery
         }
 
         if ($this->requestQueryStrictMode()) {
-            throw InvalidRequestQueryException::disallowedRelationCount($relation, $allowed);
+            throw InvalidRequestQueryException::disallowedRelationDetail('count', $relation, $allowed);
         }
 
         return false;
@@ -740,7 +740,7 @@ trait HasRequestQuery
         }
 
         if ($this->requestQueryStrictMode()) {
-            throw InvalidRequestQueryException::disallowedRelationColumn($relation, $column, $columns);
+            throw InvalidRequestQueryException::disallowedRelationDetail('column', $relation, $columns, $column);
         }
 
         return false;
@@ -1056,15 +1056,15 @@ trait HasRequestQuery
     private function requestQueryVisibleRelationCounts(): ?array
     {
         $allowedIncludes = $this->requestQueryAllowedIncludes();
-        $allowedRelationFilters = $this->requestQueryAllowedRelationFilters();
+        $relationFilters = $this->requestQueryAllowedRelationFilters();
 
-        if ($allowedIncludes === null && $allowedRelationFilters === null) {
+        if ($allowedIncludes === null && $relationFilters === null) {
             return null;
         }
 
         $relations = array_values(array_unique([
             ...($allowedIncludes ?? []),
-            ...array_keys($allowedRelationFilters ?? []),
+            ...array_keys($relationFilters ?? []),
         ]));
 
         return $this->visibleAliasedNames($relations, $this->requestQueryRelationAliases());

@@ -247,6 +247,25 @@ class RequestQueryParserTest extends TestCase
     }
 
     #[Test]
+    public function from_request_normalizes_query_root_and_scalar_list_values(): void
+    {
+        $request = Request::create('/', 'GET', [
+            'query' => [
+                0 => 'ignored',
+                'fields' => 'name,email',
+                'scope' => 'active',
+                'with' => 'profile',
+            ],
+        ]);
+
+        $result = RequestQueryParser::fromRequest($request);
+
+        $this->assertSame(['name', 'email'], $result['fields']);
+        $this->assertSame([['name' => 'active', 'parameters' => []]], $result['scope']);
+        $this->assertSame(['profile'], $result['with']);
+    }
+
+    #[Test]
     public function it_parses_nested_query_key(): void
     {
         $data = ['query' => ['where' => [['column' => 'id', 'value' => 1]]]];

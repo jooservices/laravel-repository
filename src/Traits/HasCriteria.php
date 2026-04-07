@@ -14,7 +14,7 @@ trait HasCriteria
      */
     protected array $criteria = [];
 
-    private ?int $appliedCriteriaQueryId = null;
+    private ?int $criteriaQueryId = null;
 
     public function pushCriteria(CriteriaInterface $criteria): static
     {
@@ -22,7 +22,7 @@ trait HasCriteria
 
         if ($this->query !== null) {
             $criteria->apply($this->query);
-            $this->appliedCriteriaQueryId = spl_object_id($this->query);
+            $this->criteriaQueryId = spl_object_id($this->query);
         }
 
         return $this;
@@ -32,7 +32,7 @@ trait HasCriteria
     {
         $criteria = array_pop($this->criteria);
         $this->query = null;
-        $this->appliedCriteriaQueryId = null;
+        $this->criteriaQueryId = null;
 
         return $criteria;
     }
@@ -41,7 +41,7 @@ trait HasCriteria
     {
         $this->criteria = [];
         $this->query = null;
-        $this->appliedCriteriaQueryId = null;
+        $this->criteriaQueryId = null;
 
         return $this;
     }
@@ -64,7 +64,7 @@ trait HasCriteria
         }
 
         $queryId = spl_object_id($query);
-        if ($this->appliedCriteriaQueryId === $queryId) {
+        if ($this->criteriaQueryId === $queryId) {
             return;
         }
 
@@ -72,6 +72,6 @@ trait HasCriteria
             $criteria->apply($query);
         }
 
-        $this->appliedCriteriaQueryId = $queryId;
+        $this->criteriaQueryId = $queryId;
     }
 }

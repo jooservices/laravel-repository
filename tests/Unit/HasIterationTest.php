@@ -82,4 +82,19 @@ class HasIterationTest extends TestCase
         $this->assertSame(['A', 'B'], $names);
         $this->assertCount(2, $repo->get());
     }
+
+    #[Test]
+    public function it_returns_lazy_by_id_desc_results_and_resets_the_query(): void
+    {
+        $repo = new AllowedUserRepositoryStub(new UserStub);
+        $repo->create(['name' => 'A', 'email' => self::FIRST_EMAIL, 'status' => 'active']);
+        $repo->create(['name' => 'B', 'email' => self::SECOND_EMAIL, 'status' => 'active']);
+
+        $names = $repo->filter(['status' => 'active'])->lazyByIdDesc(1)->map(
+            static fn (UserStub $user): string => $user->name,
+        )->values()->all();
+
+        $this->assertSame(['B', 'A'], $names);
+        $this->assertCount(2, $repo->get());
+    }
 }
