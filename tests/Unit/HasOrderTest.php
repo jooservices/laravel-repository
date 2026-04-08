@@ -64,6 +64,15 @@ class HasOrderTest extends TestCase
     }
 
     #[Test]
+    public function it_uses_asc_when_direction_is_not_supported(): void
+    {
+        $this->repo->create(['name' => 'B', 'email' => 'a@x.com', 'status' => 'active']);
+        $this->repo->create(['name' => 'A', 'email' => 'z@x.com', 'status' => 'active']);
+        $results = $this->repo->orderBy(['email' => 'sideways'])->get();
+        $this->assertSame('B', $results->first()->name);
+    }
+
+    #[Test]
     public function it_orders_when_column_is_order_instance(): void
     {
         $this->repo->create(['name' => 'Z', 'email' => 'z@x.com', 'status' => 'active']);

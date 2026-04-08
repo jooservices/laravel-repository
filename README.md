@@ -50,6 +50,14 @@ $users = $repository->filter(['status' => 'active'])->orderBy(['created_at' => '
 - filter chains, collection retrieval, and pagination through `HasFilter`
 - ordering through `HasOrder`
 - request-driven query parsing through `HasRequestQuery`
+- opt-in request-query allowlists and strict mode through `HasAllowedRequestQuery`
+- request-driven field selection, named request filters, callback micro filters, request-query aliases, aggregate include helpers, and value-normalization rules
+- first-class request operators such as `exact`, `partial`, `beginsWith`, and `endsWith`
+- opt-in request scopes, scope definitions, relation count clauses, nested relation filters including `whereHas` and `whereDoesntHave` variants, derived count or exists includes, additional sum or avg or min or max aggregate includes, and cursor pagination
+- reusable criteria stacks through `HasCriteria`
+- read terminals such as `first`, `firstOrFail`, `exists`, and `count` through `HasRead`
+- chunk, lazy, cursor, and `lazyById` iteration through `HasIteration`
+- opt-in cache wrappers through `HasCache`
 - reusable `Filter` and `Order` value objects
 
 ## Important current boundaries

@@ -22,5 +22,6 @@ class ServiceProviderTest extends TestCase
     {
         $this->assertSame(15, config('laravel-repository.default_per_page'));
         $this->assertSame('filter', config('laravel-repository.request_key'));
+        $this->assertFalse(config('laravel-repository.request_query.strict'));
     }
 }

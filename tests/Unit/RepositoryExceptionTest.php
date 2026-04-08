@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Jooservices\LaravelRepository\Tests\Unit;
 
+use Jooservices\LaravelRepository\Exceptions\InvalidRequestQueryException;
 use Jooservices\LaravelRepository\Exceptions\RepositoryException;
 use Jooservices\LaravelRepository\Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
@@ -24,5 +25,50 @@ class RepositoryExceptionTest extends TestCase
         $this->expectException(RepositoryException::class);
         $this->expectExceptionMessage('Test');
         throw new RepositoryException('Test');
+    }
+
+    #[Test]
+    public function it_builds_disallowed_query_messages(): void
+    {
+        $this->assertSame(
+            'Sort [email] is not allowed. Allowed sorts: name, created_at.',
+            InvalidRequestQueryException::disallowedSort('email', ['name', 'created_at'])->getMessage(),
+        );
+        $this->assertSame(
+            'Scope [active] does not exist on the repository model.',
+            InvalidRequestQueryException::unknownTarget('Scope', 'active')->getMessage(),
+        );
+
+        $supportedClauses = [
+            'where',
+            'orWhere',
+            'whereIn',
+            'whereBetween',
+            'whereNull',
+            'whereNotNull',
+            'fields',
+            'filters',
+            'scope',
+            'whereHas',
+            'with',
+            'order',
+        ];
+
+        $unsupportedClauseMessage = 'Request query clause [aggregate] is not supported. '
+            .'Supported clauses: where, orWhere, whereIn, whereBetween, whereNull, whereNotNull, '
+            .'fields, filters, scope, whereHas, with, order.';
+
+        $this->assertSame(
+            $unsupportedClauseMessage,
+            InvalidRequestQueryException::unsupportedClause('aggregate', $supportedClauses)->getMessage(),
+        );
+        $this->assertSame(
+            'Relation count [posts] is not allowed. Allowed relations: profile.',
+            InvalidRequestQueryException::disallowedRelationDetail('count', 'posts', ['profile'])->getMessage(),
+        );
+        $this->assertSame(
+            'Column [votes] is not allowed for relation [posts]. Allowed columns: [none].',
+            InvalidRequestQueryException::disallowedRelationDetail('column', 'posts', [], 'votes')->getMessage(),
+        );
     }
 }

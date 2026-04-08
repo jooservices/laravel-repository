@@ -107,6 +107,125 @@ class RequestQueryParserTest extends TestCase
     }
 
     #[Test]
+    public function it_parses_scope_clauses(): void
+    {
+        $data = [
+            'scope' => [
+                'active',
+                ['name' => 'email_domain', 'parameters' => ['x.com']],
+            ],
+        ];
+
+        $result = RequestQueryParser::parse($data);
+
+        $this->assertCount(2, $result['scope']);
+        $this->assertSame('active', $result['scope'][0]['name']);
+        $this->assertSame(['x.com'], $result['scope'][1]['parameters']);
+    }
+
+    #[Test]
+    public function it_parses_has_clauses(): void
+    {
+        $data = [
+            'has' => [
+                ['relation' => 'posts', 'operator' => '>=', 'count' => 2],
+                ['comments', 1],
+            ],
+        ];
+
+        $result = RequestQueryParser::parse($data);
+
+        $this->assertCount(2, $result['has']);
+        $this->assertSame('posts', $result['has'][0]['relation']);
+        $this->assertSame('>=', $result['has'][0]['operator']);
+        $this->assertSame(2, $result['has'][0]['count']);
+        $this->assertSame('comments', $result['has'][1]['relation']);
+        $this->assertSame('>=', $result['has'][1]['operator']);
+        $this->assertSame(1, $result['has'][1]['count']);
+    }
+
+    #[Test]
+    public function it_parses_where_has_clauses(): void
+    {
+        $data = [
+            'whereHas' => [
+                [
+                    'relation' => 'posts',
+                    'where' => [['column' => 'status', 'operator' => 'exact', 'value' => 'published']],
+                ],
+            ],
+        ];
+
+        $result = RequestQueryParser::parse($data);
+
+        $this->assertCount(1, $result['whereHas']);
+        $this->assertSame('posts', $result['whereHas'][0]['relation']);
+        $this->assertSame('exact', $result['whereHas'][0]['where'][0]['operator']);
+    }
+
+    #[Test]
+    public function it_parses_additional_relation_clause_families(): void
+    {
+        $data = [
+            'orWhereHas' => [
+                [
+                    'relation' => 'posts',
+                    'where' => [['column' => 'status', 'value' => 'published']],
+                ],
+            ],
+            'whereDoesntHave' => [
+                [
+                    'relation' => 'posts',
+                    'where' => [['column' => 'status', 'value' => 'archived']],
+                ],
+            ],
+            'orWhereDoesntHave' => [
+                [
+                    'relation' => 'posts.user',
+                    'where' => [['column' => 'email', 'value' => 'author@example.com']],
+                ],
+            ],
+        ];
+
+        $result = RequestQueryParser::parse($data);
+
+        $this->assertSame('posts', $result['orWhereHas'][0]['relation']);
+        $this->assertSame('posts', $result['whereDoesntHave'][0]['relation']);
+        $this->assertSame('posts.user', $result['orWhereDoesntHave'][0]['relation']);
+    }
+
+    #[Test]
+    public function it_parses_fields_from_array_and_csv_string(): void
+    {
+        $data = [
+            'fields' => ['name,email', 'status', 'name'],
+        ];
+
+        $result = RequestQueryParser::parse($data);
+
+        $this->assertSame(['name', 'email', 'status'], $result['fields']);
+    }
+
+    #[Test]
+    public function it_parses_named_request_filters(): void
+    {
+        $data = [
+            'filters' => [
+                'search' => 'john',
+                'status' => 'active',
+                1 => 'ignored',
+            ],
+        ];
+
+        $result = RequestQueryParser::parse($data);
+
+        $this->assertSame([
+            'search' => 'john',
+            'status' => 'active',
+        ], $result['filters']);
+    }
+
+    #[Test]
     public function it_parses_where_indexed_format(): void
     {
         $data = ['where' => [['status', 'active'], ['name', '!=', 'x']]];
@@ -124,6 +243,26 @@ class RequestQueryParserTest extends TestCase
         $result = RequestQueryParser::fromRequest($request);
         $this->assertEmpty($result['where']);
         $this->assertEmpty($result['order']);
+        $this->assertEmpty($result['scope']);
+    }
+
+    #[Test]
+    public function from_request_normalizes_query_root_and_scalar_list_values(): void
+    {
+        $request = Request::create('/', 'GET', [
+            'query' => [
+                0 => 'ignored',
+                'fields' => 'name,email',
+                'scope' => 'active',
+                'with' => 'profile',
+            ],
+        ]);
+
+        $result = RequestQueryParser::fromRequest($request);
+
+        $this->assertSame(['name', 'email'], $result['fields']);
+        $this->assertSame([['name' => 'active', 'parameters' => []]], $result['scope']);
+        $this->assertSame(['profile'], $result['with']);
     }
 
     #[Test]
@@ -165,6 +304,15 @@ class RequestQueryParserTest extends TestCase
         $this->assertCount(1, $result['order']);
         $this->assertSame('created_at', $result['order'][0]['column']);
         $this->assertSame('desc', $result['order'][0]['direction']);
+    }
+
+    #[Test]
+    public function it_normalizes_invalid_order_direction_to_asc(): void
+    {
+        $data = ['order' => [['column' => 'created_at', 'direction' => 'sideways']]];
+        $result = RequestQueryParser::parse($data);
+        $this->assertCount(1, $result['order']);
+        $this->assertSame('asc', $result['order'][0]['direction']);
     }
 
     #[Test]

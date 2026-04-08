@@ -34,9 +34,20 @@ All adapters should reflect the same repository truth:
 - code style and conventions beyond formatter output
 - design principles and change heuristics for agents
 - class and module ownership
+- implemented request-query capabilities and boundaries
 - task routing and change classification
 - review, risk, and PR authoring
 - documentation sync
 - lint and coverage gates
 - hook, CI, and release policy
 - security and release readiness
+
+## Current package behavior agents should preserve
+
+The adapter layers should stay aligned with the current package surface:
+
+- `EloquentRepository` owns model storage and lazy query lifecycle
+- traits remain explicit behavior slices rather than a monolithic base repository
+- request-query support includes fields, named request filters, callback micro filters, scopes, scope definitions, filter aliases, relation aliases, relation count clauses, eager-load includes, derived `Count` or `Exists` includes, metadata-defined aggregate include helpers, value-normalization rules, and nested relation filters
+- strict mode and allowlists are opt-in through repository contracts and traits
+- `RequestQueryParser` documentation must describe only the clause families that are actually implemented and tested

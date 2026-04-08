@@ -6,6 +6,7 @@ namespace Jooservices\LaravelRepository\Repositories;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Jooservices\LaravelRepository\Contracts\CriteriaRepositoryInterface;
 
 class EloquentRepository
 {
@@ -36,6 +37,12 @@ class EloquentRepository
      */
     protected function getQuery(): Builder
     {
-        return $this->query ??= $this->newQuery();
+        $query = $this->query ??= $this->newQuery();
+
+        if ($this instanceof CriteriaRepositoryInterface) {
+            $this->applyCriteria($query);
+        }
+
+        return $query;
     }
 }

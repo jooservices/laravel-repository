@@ -12,6 +12,10 @@
 
 `HasOrder` accepts associative arrays or `Order` value objects and applies them to the active builder.
 
+## Cursor pagination behavior
+
+Repositories that also use `HasCursorPagination` can execute cursor-based pagination for large ordered result sets. If no explicit order has been applied, cursor pagination falls back to the model primary key in ascending order.
+
 ## Example
 
 ```php
@@ -25,4 +29,9 @@ $users = $repository
     ])
     ->orderBy([new Order('created_at', 'desc')])
     ->get();
+
+$cursorPage = $repository
+    ->filter(['status' => 'active'])
+    ->orderBy(['id' => 'asc'])
+    ->cursorPaginate(15);
 ```
