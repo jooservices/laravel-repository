@@ -75,6 +75,13 @@ Use:
 - `review-and-risk-assessment`
 - `release-management`
 
+For a release-prep change, also verify that:
+
+- `composer.json` carries the intended release version
+- `CHANGELOG.md` matches the release line
+- release docs and examples use the intended branch and tag naming
+- AI-facing guidance still matches the documented release flow
+
 ## Tool-specific usage
 
 ### VS Code with Copilot

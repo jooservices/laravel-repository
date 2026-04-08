@@ -46,6 +46,13 @@ Recommended finer-grained workflow skills include:
 - security hardening
 - release management
 
+For release preparation work, keep these surfaces aligned in the same change when applicable:
+
+- `composer.json` package metadata
+- `CHANGELOG.md`
+- release-facing docs under `docs/04-development/`
+- AI-facing usage notes and prompt adapters when release workflow guidance changes
+
 ## When request-query behavior changes
 
 Agents should treat request-query work as a cross-surface change.

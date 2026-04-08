@@ -42,6 +42,8 @@ All adapters should reflect the same repository truth:
 - hook, CI, and release policy
 - security and release readiness
 
+For version-prep work, adapters should stay aligned on the same maintainer workflow: update package metadata, changelog, release docs, and AI usage notes together before tagging a stable release.
+
 ## Current package behavior agents should preserve
 
 The adapter layers should stay aligned with the current package surface:
