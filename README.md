@@ -1,5 +1,12 @@
 # JOOservices Laravel Repository
 
+[![codecov](https://codecov.io/gh/jooservices/laravel-repository/branch/master/graph/badge.svg)](https://codecov.io/gh/jooservices/laravel-repository)
+[![CI](https://github.com/jooservices/laravel-repository/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/jooservices/laravel-repository/actions/workflows/ci.yml)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/jooservices/laravel-repository/badge)](https://securityscorecards.dev/viewer/?uri=github.com/jooservices/laravel-repository)
+[![PHP Version](https://img.shields.io/badge/PHP-8.5%2B-blue.svg)](https://www.php.net/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Packagist Version](https://img.shields.io/packagist/v/jooservices/laravel-repository)](https://packagist.org/packages/jooservices/laravel-repository)
+
 The JOOservices Laravel Repository package is a PHP 8.5+ Laravel package for trait-based repository composition, CRUD support, filter and order pipelines, and request-driven query assembly.
 
 Package name: `jooservices/laravel-repository`
