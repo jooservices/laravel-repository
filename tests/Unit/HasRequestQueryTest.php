@@ -786,9 +786,33 @@ class HasRequestQueryTest extends TestCase
         $repo = new AllowedUserRepositoryStub(new UserStub, [], [], [], true);
 
         $this->expectException(InvalidRequestQueryException::class);
-        $this->expectExceptionMessage('Request query per-page value [0] must be an integer');
+        $this->expectExceptionMessage(
+            'Request query per-page value [0] must be an integer greater than or equal to 1.',
+        );
 
         $repo->paginateFromRequest(Request::create('/', 'GET', ['per_page' => 0]));
+    }
+
+    #[Test]
+    public function paginate_from_request_resets_query_when_request_query_fails(): void
+    {
+        $repo = new AllowedUserRepositoryStub(new UserStub, ['status'], [], [], true);
+        $repo->create(['name' => 'A', 'email' => self::ACTIVE_EMAIL, 'status' => 'active']);
+        $repo->create(['name' => 'B', 'email' => self::SECOND_EMAIL, 'status' => 'pending']);
+
+        try {
+            $repo->paginateFromRequest(Request::create('/', 'GET', [
+                'filter' => [
+                    'where' => [
+                        ['column' => 'status', 'value' => 'active'],
+                        ['column' => 'name', 'value' => 'A'],
+                    ],
+                ],
+            ]));
+            $this->fail('Expected strict request query validation to throw.');
+        } catch (InvalidRequestQueryException) {
+            $this->assertSame(2, $repo->count());
+        }
     }
 
     #[Test]

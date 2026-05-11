@@ -103,9 +103,9 @@ trait HasRequestQuery
      */
     public function paginateFromRequest(Request $request, string $perPageKey = 'per_page'): LengthAwarePaginator
     {
-        $this->fromRequest($request);
-
         try {
+            $this->fromRequest($request);
+
             return $this->getQuery()->paginate($this->requestPerPage($request, $perPageKey));
         } finally {
             $this->query = null;
