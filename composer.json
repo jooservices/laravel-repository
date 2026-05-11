@@ -1,7 +1,7 @@
 {
     "name": "jooservices/laravel-repository",
-    "description": "Base repositories with CRUD, filtering, ordering and query-from-request for Laravel",
-    "keywords": ["laravel", "repository", "crud", "filter", "eloquent"],
+    "description": "PHP 8.5+ Laravel repository package for trait-based CRUD, filtering, ordering, and request-driven query composition",
+    "keywords": ["laravel", "repository", "eloquent", "crud", "filtering", "ordering", "request-query"],
     "license": "MIT",
     "authors": [
         {
