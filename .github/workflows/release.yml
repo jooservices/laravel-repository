@@ -33,7 +33,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ env.PHP_VERSION }}
-          coverage: none
+          coverage: pcov
 
       - name: Install Composer dependencies
         uses: ramsey/composer-install@v4
@@ -91,4 +91,3 @@ jobs:
             -H 'content-type:application/json' \
             "${PACKAGIST_UPDATE_URL}?username=${PACKAGIST_USERNAME}" \
             -d "{\"repository\":{\"url\":\"${PACKAGE_REPOSITORY_URL}\"},\"api_token\":\"${PACKAGIST_TOKEN}\"}"
-
