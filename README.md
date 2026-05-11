@@ -59,12 +59,13 @@ $users = $repository->filter(['status' => 'active'])->orderBy(['created_at' => '
 - request-driven query parsing through `HasRequestQuery`
 - opt-in request-query allowlists and strict mode through `HasAllowedRequestQuery`
 - request-driven field selection, named request filters, callback micro filters, request-query aliases, aggregate include helpers, and value-normalization rules
-- first-class request operators such as `exact`, `partial`, `beginsWith`, and `endsWith`
+- first-class request operators such as `exact`, `partial`, `beginsWith`, and `endsWith`, plus safe aliases like `eq`, `neq`, `gt`, `gte`, `lt`, `lte`, and `like`
 - opt-in request scopes, scope definitions, relation count clauses, nested relation filters including `whereHas` and `whereDoesntHave` variants, derived count or exists includes, additional sum or avg or min or max aggregate includes, and cursor pagination
 - reusable criteria stacks through `HasCriteria`
 - read terminals such as `first`, `firstOrFail`, `exists`, and `count` through `HasRead`
 - chunk, lazy, cursor, and `lazyById` iteration through `HasIteration`
-- opt-in cache wrappers through `HasCache`
+- safe request pagination through `paginateFromRequest()`
+- opt-in cache wrappers and cache-key helpers through `HasCache`
 - reusable `Filter` and `Order` value objects
 
 ## Important current boundaries
@@ -81,8 +82,9 @@ Start with:
 - [Installation](docs/01-getting-started/installation.md)
 - [Quick Start](docs/01-getting-started/quick-start.md)
 - [Trait-Based Composition](docs/02-user-guide/trait-based-composition.md)
-- [Competitive Comparison And Roadmap](docs/12-competitive-comparison-and-roadmap.md)
-- [Risks, Legacy, and Gaps](docs/11-risks-legacy-and-gaps.md)
+- [Examples](docs/03-examples/README.md)
+- [Competitive Comparison And Roadmap](docs/05-maintenance/competitive-comparison-and-roadmap.md)
+- [Risks, Legacy, and Gaps](docs/05-maintenance/risks-legacy-and-gaps.md)
 
 ## AI Support
 

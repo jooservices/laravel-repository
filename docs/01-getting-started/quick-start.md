@@ -29,3 +29,5 @@ $users = $repository->filter(['status' => 'active'])->orderBy(['created_at' => '
 ```
 
 When request-driven querying is needed, add `HasRequestQuery` and call `fromRequest($request)` before `get()` or `paginate()`.
+
+Use `paginateFromRequest($request)` when the endpoint should accept a guarded `per_page` request value using the package `default_per_page` and `max_per_page` config.

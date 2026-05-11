@@ -14,6 +14,7 @@ The repository AI skill pack helps contributors and agents:
 It also keeps agents aligned with the current package behavior, especially around request-query support. Today that includes:
 
 - request-query allowlists and strict mode
+- strict operator validation and request per-page guards
 - request-driven fields, named request filters, and callback micro filters
 - filter aliases and relation aliases
 - scope filters and scope definitions with parameter-count enforcement
@@ -21,6 +22,7 @@ It also keeps agents aligned with the current package behavior, especially aroun
 - eager-load includes plus derived `Count` and `Exists` helpers and metadata-defined sum or avg or min or max aggregate helpers
 - request value-normalization rules for filters, scopes, named filters, and relation filters
 - nested relation filters such as `whereHas` and `whereDoesntHave` variants
+- criteria/query state lifecycle and low-level cache wrapper boundaries
 
 ## Entry points
 
@@ -61,6 +63,7 @@ Update together:
 
 - parser and trait code under `src/Support/` and `src/Traits/`
 - strict-mode and allowlist tests
+- pagination guard, operator validation, lifecycle, and cache wrapper tests when those areas change
 - user-facing docs for request-query support
 - AI-facing docs and instructions if repository truth or contributor guidance changed
 

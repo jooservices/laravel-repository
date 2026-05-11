@@ -44,7 +44,18 @@ class RequestQuerySupportClassesTest extends TestCase
         QueryOperator::apply($query, 'where', 'status', '!=', 'pending');
         $this->assertCount(1, $query->get());
 
+        $query = UserStub::query();
+        QueryOperator::apply($query, 'where', 'id', 'gte', 1);
+        $this->assertCount(2, $query->get());
+
+        $query = UserStub::query();
+        QueryOperator::apply($query, 'where', 'status', 'neq', 'pending');
+        $this->assertCount(1, $query->get());
+
         $this->assertSame('beginswith', QueryOperator::normalize(' begins_with '));
+        $this->assertTrue(QueryOperator::isSupported('ends with'));
+        $this->assertTrue(QueryOperator::isSupported('lte'));
+        $this->assertFalse(QueryOperator::isSupported('regexp'));
     }
 
     #[Test]

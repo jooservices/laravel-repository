@@ -6,3 +6,5 @@ alwaysApply: true
 Read `AGENTS.md` first for repository policy.
 
 Keep the package trait-based, use the canonical composer command map, and update docs and tests whenever behavior or contributor workflow changes.
+
+For request-query work, preserve strict allowlists, operator validation, max per-page guards, query-state reset semantics, criteria lifecycle behavior, and the low-level cache wrapper boundary.

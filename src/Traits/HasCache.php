@@ -14,6 +14,32 @@ trait HasCache
 {
     protected ?string $cacheStore = null;
 
+    public function useCacheStore(?string $store): static
+    {
+        $this->cacheStore = $store;
+
+        return $this;
+    }
+
+    /**
+     * @param  array<int|string, mixed>  $parts
+     */
+    public function cacheKey(string $suffix, array $parts = []): string
+    {
+        $segments = [
+            str_replace('\\', '.', static::class),
+            trim($suffix, '.'),
+        ];
+
+        foreach ($parts as $key => $value) {
+            $segments[] = is_string($key)
+                ? $key.':'.(string) $value
+                : (string) $value;
+        }
+
+        return implode('.', array_filter($segments, static fn (string $segment): bool => $segment !== ''));
+    }
+
     /**
      * @param  Closure(static): mixed  $resolver
      */

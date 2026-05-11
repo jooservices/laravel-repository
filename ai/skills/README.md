@@ -52,4 +52,8 @@ The adapter layers should stay aligned with the current package surface:
 - traits remain explicit behavior slices rather than a monolithic base repository
 - request-query support includes fields, named request filters, callback micro filters, scopes, scope definitions, filter aliases, relation aliases, relation count clauses, eager-load includes, derived `Count` or `Exists` includes, metadata-defined aggregate include helpers, value-normalization rules, and nested relation filters
 - strict mode and allowlists are opt-in through repository contracts and traits
+- strict request-query mode requires explicit allowlists for request-controlled names
+- request pagination safety uses `default_per_page` and `max_per_page`
+- criteria should apply once per active query builder and reset predictably when changed
+- `HasCache` remains a low-level opt-in wrapper, not automatic query caching
 - `RequestQueryParser` documentation must describe only the clause families that are actually implemented and tested

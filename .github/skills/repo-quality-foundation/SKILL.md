@@ -17,6 +17,9 @@ description: "Use when starting any non-trivial task in jooservices/laravel-repo
 - `EloquentRepository` owns model storage and lazy query creation.
 - `HasFilter` clears query state after `get()` and `paginate()`.
 - `RequestQueryParser` supports only the currently implemented clause families.
+- Strict request-query mode requires explicit allowlists for request-controlled names.
+- Request-driven pagination is guarded by `default_per_page` and `max_per_page`.
+- `HasCache` is a low-level opt-in wrapper and does not automatically cache or invalidate queries.
 
 ## Done criteria
 

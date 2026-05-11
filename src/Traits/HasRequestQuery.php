@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Jooservices\LaravelRepository\Traits;
 
 use Closure;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
@@ -19,6 +20,9 @@ use Jooservices\LaravelRepository\Support\RequestQueryParser;
 use Jooservices\LaravelRepository\Support\RequestQueryValueNormalizer;
 use LogicException;
 
+/**
+ * @phpstan-import-type QueryClauses from RequestQueryParser
+ */
 trait HasRequestQuery
 {
     /**
@@ -68,6 +72,7 @@ trait HasRequestQuery
         $this->assertSupportedRequestQuery($data);
 
         $clauses = RequestQueryParser::parse($data);
+        $this->assertSupportedRequestOperators($clauses);
         $query = $this->getQuery();
         $filterValueResolver = fn (string $column, mixed $value): mixed => $this->normalizeFilterValue($column, $value);
 
@@ -89,6 +94,22 @@ trait HasRequestQuery
         $this->applyOrderClauses($query, $clauses['order']);
 
         return $this;
+    }
+
+    /**
+     * Apply request query clauses and paginate with package request per-page guards.
+     *
+     * @return LengthAwarePaginator<int, \Illuminate\Database\Eloquent\Model>
+     */
+    public function paginateFromRequest(Request $request, string $perPageKey = 'per_page'): LengthAwarePaginator
+    {
+        $this->fromRequest($request);
+
+        try {
+            return $this->getQuery()->paginate($this->requestPerPage($request, $perPageKey));
+        } finally {
+            $this->query = null;
+        }
     }
 
     /**
@@ -129,6 +150,32 @@ trait HasRequestQuery
 
             if (in_array($clause, self::ARRAY_ONLY_REQUEST_QUERY_CLAUSES, true) && ! is_array($value)) {
                 throw InvalidRequestQueryException::invalidClause($clause);
+            }
+        }
+    }
+
+    /**
+     * @param  QueryClauses  $clauses
+     */
+    private function assertSupportedRequestOperators(array $clauses): void
+    {
+        if (! $this->requestQueryStrictMode()) {
+            return;
+        }
+
+        foreach (['where', 'orWhere'] as $clause) {
+            foreach ($clauses[$clause] as $where) {
+                QueryOperator::assertSupported($where['operator']);
+            }
+        }
+
+        foreach (['whereHas', 'orWhereHas', 'whereDoesntHave', 'orWhereDoesntHave'] as $relationClause) {
+            foreach ($clauses[$relationClause] as $clause) {
+                foreach (['where', 'orWhere'] as $whereClause) {
+                    foreach ($clause[$whereClause] as $where) {
+                        QueryOperator::assertSupported($where['operator']);
+                    }
+                }
             }
         }
     }
@@ -605,12 +652,16 @@ trait HasRequestQuery
      */
     private function guardAllowedValue(string $value, ?array $allowed, callable $exceptionFactory): bool
     {
-        if ($allowed === null || in_array($value, $allowed, true)) {
+        if ($allowed === null && ! $this->requestQueryStrictMode()) {
+            return true;
+        }
+
+        if ($allowed !== null && in_array($value, $allowed, true)) {
             return true;
         }
 
         if ($this->requestQueryStrictMode()) {
-            throw $exceptionFactory($value, $allowed);
+            throw $exceptionFactory($value, $allowed ?? []);
         }
 
         return false;
@@ -702,12 +753,16 @@ trait HasRequestQuery
     private function shouldApplyRelationFilter(string $relation): bool
     {
         $allowed = $this->requestQueryVisibleRelationFilters();
-        if ($allowed === null || in_array($relation, $allowed, true)) {
+        if ($allowed === null && ! $this->requestQueryStrictMode()) {
+            return true;
+        }
+
+        if ($allowed !== null && in_array($relation, $allowed, true)) {
             return true;
         }
 
         if ($this->requestQueryStrictMode()) {
-            throw InvalidRequestQueryException::disallowedRelation($relation, $allowed);
+            throw InvalidRequestQueryException::disallowedRelation($relation, $allowed ?? []);
         }
 
         return false;
@@ -716,12 +771,16 @@ trait HasRequestQuery
     private function shouldApplyRelationCount(string $relation): bool
     {
         $allowed = $this->requestQueryVisibleRelationCounts();
-        if ($allowed === null || in_array($relation, $allowed, true)) {
+        if ($allowed === null && ! $this->requestQueryStrictMode()) {
+            return true;
+        }
+
+        if ($allowed !== null && in_array($relation, $allowed, true)) {
             return true;
         }
 
         if ($this->requestQueryStrictMode()) {
-            throw InvalidRequestQueryException::disallowedRelationDetail('count', $relation, $allowed);
+            throw InvalidRequestQueryException::disallowedRelationDetail('count', $relation, $allowed ?? []);
         }
 
         return false;
@@ -730,7 +789,7 @@ trait HasRequestQuery
     private function shouldApplyRelationColumn(string $relation, string $column): bool
     {
         $allowed = $this->requestQueryAllowedRelationFilters();
-        if ($allowed === null) {
+        if ($allowed === null && ! $this->requestQueryStrictMode()) {
             return true;
         }
 
@@ -1124,6 +1183,43 @@ trait HasRequestQuery
     private function requestQueryStrictMode(): bool
     {
         return $this instanceof AllowsRequestQueryInterface && $this->isRequestQueryStrict();
+    }
+
+    private function requestPerPage(Request $request, string $key): int
+    {
+        $default = max(1, (int) config('laravel-repository.default_per_page', 15));
+        $max = max(1, (int) config('laravel-repository.max_per_page', 100));
+        $value = $request->input($key);
+
+        if ($value === null || $value === '') {
+            return min($default, $max);
+        }
+
+        if (filter_var($value, FILTER_VALIDATE_INT) === false || (int) $value < 1) {
+            if ($this->requestQueryStrictMode()) {
+                throw new InvalidRequestQueryException(sprintf(
+                    'Request query per-page value [%s] must be an integer greater than or equal to 1.',
+                    is_scalar($value) ? (string) $value : get_debug_type($value),
+                ));
+            }
+
+            return min($default, $max);
+        }
+
+        $perPage = (int) $value;
+        if ($perPage > $max) {
+            if ($this->requestQueryStrictMode()) {
+                throw new InvalidRequestQueryException(sprintf(
+                    'Request query per-page value [%d] exceeds the configured maximum of [%d].',
+                    $perPage,
+                    $max,
+                ));
+            }
+
+            return $max;
+        }
+
+        return $perPage;
     }
 
     private function normalizeFilterValue(string $column, mixed $value): mixed

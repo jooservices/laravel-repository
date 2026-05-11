@@ -80,7 +80,6 @@
         "post-install-cmd": "@hooks:install",
         "post-update-cmd": "@hooks:install"
     },
-    "version": "1.1.0",
     "config": {
         "sort-packages": true,
         "allow-plugins": {
