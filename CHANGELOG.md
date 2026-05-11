@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-05-11
+
+### Added
+
+- Added strict request operator validation and safe aliases for `eq`, `neq`, `gt`, `gte`, `lt`, `lte`, and `like`
+- Added request per-page guards through `paginateFromRequest()` with configurable `max_per_page`
+- Added cache store and cache-key helpers to the opt-in `HasCache` wrapper
+- Added examples and maintenance docs under the numbered docs structure
+
+### Changed
+
+- Hardened strict request-query allowlist behavior for request-controlled names
+- Reset query state through terminal operations with `try/finally`
+- Expanded tests for request-query safety, pagination guards, lifecycle behavior, criteria, and cache wrappers
+
 ## [1.1.0] - 2026-04-08
 
 ### Changed
@@ -33,5 +48,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Laravel ^12.0
 - illuminate/contracts, illuminate/database, illuminate/support, illuminate/http ^12.0
 
+[1.2.0]: https://github.com/jooservices/laravel-repository/releases/tag/v1.2.0
 [1.1.0]: https://github.com/jooservices/laravel-repository/releases/tag/v1.1.0
 [1.0.0]: https://github.com/jooservices/laravel-repository/releases/tag/v1.0.0

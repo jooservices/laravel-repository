@@ -49,6 +49,29 @@ class HasCriteriaTest extends TestCase
     }
 
     #[Test]
+    public function criteria_changes_rebuild_query_state_predictably(): void
+    {
+        $repo = new AllowedUserRepositoryStub(new UserStub);
+        $repo->create(['name' => 'A', 'email' => 'criteria-a@x.com', 'status' => 'active']);
+        $repo->create(['name' => 'B', 'email' => 'criteria-b@x.com', 'status' => 'pending']);
+
+        $repo->filter(['name' => 'A']);
+        $repo->pushCriteria(new ActiveStatusCriteriaStub);
+
+        $this->assertCount(1, $repo->get());
+
+        $repo->popCriteria();
+
+        $this->assertCount(2, $repo->get());
+
+        $repo->pushCriteria(new ActiveStatusCriteriaStub);
+        $this->assertCount(1, $repo->get());
+
+        $repo->clearCriteria();
+        $this->assertCount(2, $repo->get());
+    }
+
+    #[Test]
     public function it_exposes_criteria_and_does_not_reapply_the_same_query(): void
     {
         $repo = new AllowedUserRepositoryStub(new UserStub);

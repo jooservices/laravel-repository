@@ -21,6 +21,7 @@ class ServiceProviderTest extends TestCase
     public function config_can_be_merged(): void
     {
         $this->assertSame(15, config('laravel-repository.default_per_page'));
+        $this->assertSame(100, config('laravel-repository.max_per_page'));
         $this->assertSame('filter', config('laravel-repository.request_key'));
         $this->assertFalse(config('laravel-repository.request_query.strict'));
     }

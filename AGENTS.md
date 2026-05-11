@@ -64,6 +64,10 @@ Keep these package boundaries explicit:
 - Traits own behavior slices: CRUD, filtering, ordering, and request-query composition remain separate concerns.
 - `RequestQueryParser` only supports the currently implemented clause families.
 - Repositories are opt-in compositions; no feature should be described as globally active unless the repository actually uses the matching trait.
+- Strict request-query mode must use explicit allowlists for request-controlled filters, sorts, fields, includes, scopes, relation filters, and aggregate includes.
+- Request per-page values controlled by the package must respect `default_per_page` and `max_per_page`.
+- Criteria must apply once per active builder; push, pop, and clear operations should keep query lifecycle predictable.
+- `HasCache` is a low-level opt-in wrapper, not automatic query caching or CRUD cache invalidation.
 
 ## Documentation policy
 
@@ -71,6 +75,7 @@ Keep these package boundaries explicit:
 - Use `jooservices/laravel-repository` only for the Composer package identifier.
 - When public behavior changes, update docs and examples in the same change.
 - Keep the docs hub, development docs, and AI instructions aligned with the same command map and package boundaries.
+- Preserve the numbered docs structure: `00-architecture`, `01-getting-started`, `02-user-guide`, `03-examples`, `04-development`, and `05-maintenance`.
 
 ## Change checklist
 

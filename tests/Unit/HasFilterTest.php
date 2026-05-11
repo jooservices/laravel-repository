@@ -59,4 +59,15 @@ class HasFilterTest extends TestCase
         $this->assertCount(1, $all);
         $this->assertSame('A', $all->first()->name);
     }
+
+    #[Test]
+    public function it_resets_query_after_paginate(): void
+    {
+        $this->repo->create(['name' => 'A', 'email' => 'a@x.com', 'status' => 'active']);
+        $this->repo->create(['name' => 'B', 'email' => 'b@x.com', 'status' => 'pending']);
+
+        $this->repo->filter(['status' => 'active'])->paginate(1);
+
+        $this->assertCount(2, $this->repo->get());
+    }
 }

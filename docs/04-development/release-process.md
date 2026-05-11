@@ -35,7 +35,7 @@ Do not broaden these permissions unless the workflow behavior changes.
 ### 3. Recommended branch and tag policy
 
 - Protect `master` and any long-lived integration branches your team actually uses.
-- Prepare version updates on a release branch such as `release/v1.1.0` when you want an isolated release-prep change set.
+- Prepare release notes on a release branch such as `release/v1.2.0` when you want an isolated release-prep change set.
 - Create release tags only from the intended release commit.
 - Use stable tags in the format `vX.Y.Z` for releases that should notify Packagist.
 - Pre-release tags such as `v1.2.3-beta.1` should not trigger the Packagist publish step.
@@ -86,19 +86,21 @@ Make sure the release commit is already on the intended branch.
 
 Typical release-prep updates include:
 
-1. bump the Composer `version` field
-2. refresh `CHANGELOG.md`
-3. update release-facing docs and AI guidance if workflow or examples changed
+1. refresh `CHANGELOG.md` from `Unreleased` to the target version and date
+2. update release-facing docs and AI guidance if workflow or examples changed
+3. verify `composer validate --strict` still passes
+
+Do not add or bump a Composer `version` field. Packagist and the GitHub release workflow should treat the pushed `vX.Y.Z` tag as the release version source.
 
 ### 2. Create the tag locally
 
 Example:
 
 ```bash
-git checkout release/v1.1.0
-git tag v1.1.0
-git push origin release/v1.1.0
-git push origin v1.1.0
+git checkout release/v1.2.0
+git tag v1.2.0
+git push origin release/v1.2.0
+git push origin v1.2.0
 ```
 
 ### 3. Observe the workflow

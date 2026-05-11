@@ -10,33 +10,37 @@ trait HasRead
 {
     public function first(): ?Model
     {
-        $result = $this->getQuery()->first();
-        $this->query = null;
-
-        return $result;
+        try {
+            return $this->getQuery()->first();
+        } finally {
+            $this->query = null;
+        }
     }
 
     public function firstOrFail(): Model
     {
-        $result = $this->getQuery()->firstOrFail();
-        $this->query = null;
-
-        return $result;
+        try {
+            return $this->getQuery()->firstOrFail();
+        } finally {
+            $this->query = null;
+        }
     }
 
     public function exists(): bool
     {
-        $result = $this->getQuery()->exists();
-        $this->query = null;
-
-        return $result;
+        try {
+            return $this->getQuery()->exists();
+        } finally {
+            $this->query = null;
+        }
     }
 
     public function count(): int
     {
-        $result = $this->getQuery()->count();
-        $this->query = null;
-
-        return $result;
+        try {
+            return $this->getQuery()->count();
+        } finally {
+            $this->query = null;
+        }
     }
 }

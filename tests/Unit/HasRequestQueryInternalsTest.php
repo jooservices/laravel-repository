@@ -600,15 +600,7 @@ class HasRequestQueryInternalsTest extends TestCase
         $this->assertTrue($this->invokePrivate($repo, 'relationExists', ['posts.user']));
         $this->assertFalse($this->invokePrivate($repo, 'relationExists', ['posts.missing']));
 
-        $nonRelationRepo = new class(new class extends UserStub
-        {
-            public function bogus(): object
-            {
-                return new stdClass;
-            }
-        }) extends EloquentRepository {
-            use HasRequestQuery;
-        };
+        $nonRelationRepo = new NonRelationRequestQueryRepositoryStub(new NonRelationUserStub);
 
         $this->assertFalse($this->invokePrivate($nonRelationRepo, 'relationExists', ['bogus']));
     }
@@ -643,5 +635,18 @@ class StrictRequestQueryRepositoryStub extends EloquentRepository implements All
     {
         parent::__construct($model);
         $this->requestQueryStrict = true;
+    }
+}
+
+class NonRelationRequestQueryRepositoryStub extends EloquentRepository
+{
+    use HasRequestQuery;
+}
+
+class NonRelationUserStub extends UserStub
+{
+    public function bogus(): object
+    {
+        return new stdClass;
     }
 }

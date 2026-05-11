@@ -6,7 +6,7 @@
 
 ## Filter behavior
 
-`HasFilter` accepts either key-value pairs or `FilterInterface` implementations. `get()` and `paginate()` execute the active query and then clear the stored builder.
+`HasFilter` accepts either key-value pairs or `FilterInterface` implementations. `get()` and `paginate()` execute the active query and then clear the stored builder, including when a terminal operation throws.
 
 ## Order behavior
 
@@ -15,6 +15,10 @@
 ## Cursor pagination behavior
 
 Repositories that also use `HasCursorPagination` can execute cursor-based pagination for large ordered result sets. If no explicit order has been applied, cursor pagination falls back to the model primary key in ascending order.
+
+## Iteration behavior
+
+Repositories that use `HasIteration` can process records with `chunk()`, `lazy()`, `cursor()`, `lazyById()`, and `lazyByIdDesc()`. Each terminal call clears query state so filters from one iteration do not leak into the next repository call.
 
 ## Example
 

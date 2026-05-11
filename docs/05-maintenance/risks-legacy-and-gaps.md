@@ -5,6 +5,14 @@
 - The package intentionally exposes repository behavior through opt-in traits rather than one always-on implementation.
 - Query state reset semantics depend on the filtering chain and should not be removed casually.
 - Request-query support is limited to the implemented clause families.
+- Strict request-query mode requires explicit allowlists for request-controlled names.
+- `HasCache` is a low-level opt-in wrapper and does not automatically cache queries or invalidate CRUD writes.
+
+## Namespace mismatch
+
+Current public code and examples use the namespace `Jooservices\LaravelRepository`.
+
+The broader JOOservices ecosystem style prefers `JOOservices\*`. Renaming this package namespace would break existing consumers and should be considered only for a future major release with a migration plan and compatibility notes.
 
 ## Governance rollout risks
 

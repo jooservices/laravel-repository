@@ -16,10 +16,11 @@ trait HasIteration
      */
     public function chunk(int $count, Closure $callback): bool
     {
-        $result = $this->getQuery()->chunk($count, $callback);
-        $this->query = null;
-
-        return $result;
+        try {
+            return $this->getQuery()->chunk($count, $callback);
+        } finally {
+            $this->query = null;
+        }
     }
 
     /**
@@ -27,10 +28,11 @@ trait HasIteration
      */
     public function lazy(int $chunkSize = 1000): LazyCollection
     {
-        $result = $this->getQuery()->lazy($chunkSize);
-        $this->query = null;
-
-        return $result;
+        try {
+            return $this->getQuery()->lazy($chunkSize);
+        } finally {
+            $this->query = null;
+        }
     }
 
     /**
@@ -38,10 +40,11 @@ trait HasIteration
      */
     public function cursor(): LazyCollection
     {
-        $result = $this->getQuery()->cursor();
-        $this->query = null;
-
-        return $result;
+        try {
+            return $this->getQuery()->cursor();
+        } finally {
+            $this->query = null;
+        }
     }
 
     /**
@@ -49,10 +52,11 @@ trait HasIteration
      */
     public function lazyById(int $chunkSize = 1000, ?string $column = null, ?string $alias = null): LazyCollection
     {
-        $result = $this->getQuery()->lazyById($chunkSize, $column, $alias);
-        $this->query = null;
-
-        return $result;
+        try {
+            return $this->getQuery()->lazyById($chunkSize, $column, $alias);
+        } finally {
+            $this->query = null;
+        }
     }
 
     /**
@@ -60,9 +64,10 @@ trait HasIteration
      */
     public function lazyByIdDesc(int $chunkSize = 1000, ?string $column = null, ?string $alias = null): LazyCollection
     {
-        $result = $this->getQuery()->lazyByIdDesc($chunkSize, $column, $alias);
-        $this->query = null;
-
-        return $result;
+        try {
+            return $this->getQuery()->lazyByIdDesc($chunkSize, $column, $alias);
+        } finally {
+            $this->query = null;
+        }
     }
 }

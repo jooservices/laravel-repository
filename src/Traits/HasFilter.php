@@ -33,10 +33,11 @@ trait HasFilter
      */
     public function get(): Collection
     {
-        $result = $this->getQuery()->get();
-        $this->query = null;
-
-        return $result;
+        try {
+            return $this->getQuery()->get();
+        } finally {
+            $this->query = null;
+        }
     }
 
     /**
@@ -44,9 +45,10 @@ trait HasFilter
      */
     public function paginate(int $perPage = 15): LengthAwarePaginator
     {
-        $result = $this->getQuery()->paginate($perPage);
-        $this->query = null;
-
-        return $result;
+        try {
+            return $this->getQuery()->paginate($perPage);
+        } finally {
+            $this->query = null;
+        }
     }
 }

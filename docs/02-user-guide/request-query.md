@@ -31,17 +31,27 @@ Repositories that implement `ProvidesRequestQueryMetadataInterface` and use `Has
 
 The request-query layer supports semantic operators in `where`, `orWhere`, and nested relation clauses such as `whereHas` and `whereDoesntHave`:
 
-- `exact`
-- `partial`
-- `beginsWith`
-- `endsWith`
+- `exact` maps to `=`
+- `partial` maps to `like` with `%value%`
+- `beginsWith` maps to `like` with `value%`
+- `endsWith` maps to `like` with `%value`
+- `eq` maps to `=`
+- `neq` maps to `!=`
+- `gt` maps to `>`
+- `gte` maps to `>=`
+- `lt` maps to `<`
+- `lte` maps to `<=`
+- `like` maps to `like`
 
 These map to standard Eloquent query behavior so callers do not need to build `%value%` patterns manually.
+
+Strict mode rejects unsupported request operators with `InvalidRequestQueryException`. Non-strict mode preserves compatibility with Laravel-supported raw operators.
 
 ## Controller example
 
 ```php
 $users = $repository->fromRequest($request)->paginate(15);
+$safeUsers = $repository->paginateFromRequest($request);
 ```
 
 ## Allowlists and strict mode
@@ -147,6 +157,7 @@ final class UserRepository extends EloquentRepository implements AllowsRequestQu
 
 - disallowed filters, sorts, includes, fields, scopes, relation filters, relation count clauses, or named request filters are skipped in permissive mode
 - disallowed filters, sorts, includes, fields, scopes, relation filters, relation count clauses, or named request filters throw `InvalidRequestQueryException` in strict mode
+- strict mode requires request-controlled names to be present in the matching allowlist
 - unsupported clause families, invalid array-only clause shapes, and unknown eager-load relations also throw `InvalidRequestQueryException` in strict mode
 - scope definitions can alias public request names to model scopes and enforce exact parameter counts
 - relation aliases can be reused across eager-loading includes, relation count clauses, and relation filters
@@ -216,6 +227,18 @@ $users = $repository->fromRequest($request)->get();
 `aggregateIncludes` lets repositories expose public request include names such as `postsVotesSum` while internally calling aggregate eager-load helpers on the real relation.
 
 `valueRules` lets repositories normalize public request values before they are applied. Common rules include trimming, lowercasing, integer casting, boolean casting, comma-list expansion, and null handling.
+
+## Safe Request Pagination
+
+`paginateFromRequest($request)` applies request query clauses and reads `per_page` from the request. It uses `laravel-repository.default_per_page` when `per_page` is missing or invalid in permissive mode, and caps large values at `laravel-repository.max_per_page`.
+
+```php
+// config/laravel-repository.php
+'default_per_page' => 15,
+'max_per_page' => 100,
+```
+
+In strict mode, invalid `per_page` values and values above `max_per_page` throw `InvalidRequestQueryException`.
 
 ## Important boundary
 
