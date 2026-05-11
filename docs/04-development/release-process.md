@@ -117,6 +117,7 @@ In GitHub Actions, the `Release` workflow should:
 
 - checks out the repository
 - installs Composer dependencies
+- installs PCOV because the PHPUnit configuration emits coverage reports
 - runs `composer test`
 
 ### Release job
