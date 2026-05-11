@@ -7,7 +7,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Packagist Version](https://img.shields.io/packagist/v/jooservices/laravel-repository)](https://packagist.org/packages/jooservices/laravel-repository)
 
-The JOOservices Laravel Repository package is a PHP 8.5+ Laravel package for trait-based repository composition, CRUD support, filter and order pipelines, and request-driven query assembly.
+The **JOOservices Laravel Repository** package is a PHP 8.5+ Laravel package for trait-based repository composition, CRUD, filtering, ordering, and request-driven query composition.
 
 Package name: `jooservices/laravel-repository`
 
