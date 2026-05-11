@@ -14,7 +14,6 @@ concurrency:
 
 permissions:
   contents: write
-  discussions: write
 
 env:
   PHP_VERSION: '8.5'
@@ -57,7 +56,6 @@ jobs:
           draft: false
           prerelease: ${{ contains(github.ref_name, '-') }}
           generate_release_notes: true
-          discussion_category_name: Releases
 
   publish:
     name: Publish To Packagist

@@ -28,7 +28,6 @@ In the GitHub repository:
 The checked-in release workflow already declares the required permissions:
 
 - `contents: write`
-- `discussions: write`
 
 Do not broaden these permissions unless the workflow behavior changes.
 
@@ -124,6 +123,7 @@ In GitHub Actions, the `Release` workflow should:
 
 - creates a GitHub Release from the tag
 - generates GitHub release notes through the release action
+- does not require GitHub Discussions to be enabled
 
 ### Publish job
 
