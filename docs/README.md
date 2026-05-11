@@ -19,6 +19,7 @@ The package provides:
 3. [Trait-Based Composition](./02-user-guide/trait-based-composition.md)
 4. [CRUD, Filter, And Order](./02-user-guide/crud-filter-order.md)
 5. [Request Query Support](./02-user-guide/request-query.md)
+6. [Examples](./03-examples/README.md)
 
 ## Documentation map
 
@@ -39,6 +40,10 @@ The package provides:
 - [CRUD, Filter, And Order](./02-user-guide/crud-filter-order.md)
 - [Request Query Support](./02-user-guide/request-query.md)
 
+### Examples
+
+- [Repository Examples](./03-examples/README.md)
+
 ### Development
 
 - [Setup](./04-development/setup.md)
@@ -50,8 +55,8 @@ The package provides:
 
 ### Maintenance
 
-- [Risks, Legacy, And Gaps](./11-risks-legacy-and-gaps.md)
-- [Competitive Comparison And Roadmap](./12-competitive-comparison-and-roadmap.md)
+- [Risks, Legacy, And Gaps](./05-maintenance/risks-legacy-and-gaps.md)
+- [Competitive Comparison And Roadmap](./05-maintenance/competitive-comparison-and-roadmap.md)
 
 ## Compatibility pages
 

@@ -8,3 +8,4 @@ Before implementation:
 2. Load the relevant skills from `.github/skills/`.
 3. Keep the change minimal and aligned with trait-based repository architecture.
 4. Update tests, docs, and workflow references when required.
+5. Preserve request-query strict allowlists, max per-page guards, query lifecycle reset, criteria behavior, and the low-level cache wrapper boundary.

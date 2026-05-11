@@ -18,3 +18,5 @@ description: "Use when public behavior, contributor workflow, docs structure, or
 - Describe only implemented behavior.
 - Keep examples aligned with current contracts, traits, and request parser support.
 - When commands change, update docs, hooks, workflows, and AI files in the same change.
+- Keep docs in the numbered structure, including `03-examples` and `05-maintenance`.
+- When request-query behavior changes, update strict-mode, operator, pagination, security, and allowlist examples together.

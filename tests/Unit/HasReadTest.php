@@ -48,9 +48,14 @@ class HasReadTest extends TestCase
     #[Test]
     public function it_throws_when_first_or_fail_cannot_find_a_record(): void
     {
-        $this->expectException(ModelNotFoundException::class);
+        $this->repo->create(['name' => 'Visible', 'email' => 'visible@x.com', 'status' => 'active']);
 
-        $this->repo->filter(['status' => 'missing'])->firstOrFail();
+        try {
+            $this->repo->filter(['status' => 'missing'])->firstOrFail();
+            $this->fail('Expected firstOrFail to throw.');
+        } catch (ModelNotFoundException) {
+            $this->assertSame(1, $this->repo->count());
+        }
     }
 
     #[Test]
@@ -63,5 +68,18 @@ class HasReadTest extends TestCase
         $this->assertTrue($this->repo->filter(['status' => 'active'])->exists());
         $this->assertSame(2, $this->repo->filter(['status' => 'active'])->count());
         $this->assertFalse($this->repo->filter(['status' => 'archived'])->exists());
+    }
+
+    #[Test]
+    public function exists_and_count_do_not_leak_filters_to_later_calls(): void
+    {
+        $this->repo->create(['name' => 'A', 'email' => 'a2@x.com', 'status' => 'active']);
+        $this->repo->create(['name' => 'B', 'email' => 'b2@x.com', 'status' => 'pending']);
+
+        $this->assertTrue($this->repo->filter(['status' => 'active'])->exists());
+        $this->assertSame(2, $this->repo->count());
+
+        $this->assertSame(1, $this->repo->filter(['status' => 'pending'])->count());
+        $this->assertSame(2, $this->repo->count());
     }
 }

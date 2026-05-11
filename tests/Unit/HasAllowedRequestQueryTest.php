@@ -72,6 +72,44 @@ class HasAllowedRequestQueryTest extends TestCase
     }
 
     #[Test]
+    public function it_requires_filter_allowlists_for_request_columns_in_strict_mode(): void
+    {
+        $repo = new AllowedUserRepositoryStub(new UserStub, null, null, null, true);
+
+        $request = Request::create('/', 'GET', [
+            'filter' => [
+                'where' => [
+                    ['column' => 'unknown_column', 'value' => 'x'],
+                ],
+            ],
+        ]);
+
+        $this->expectException(InvalidRequestQueryException::class);
+        $this->expectExceptionMessage('Filter [unknown_column] is not allowed. Allowed filters: [none].');
+
+        $repo->fromRequest($request);
+    }
+
+    #[Test]
+    public function it_rejects_sql_like_filter_names_in_strict_mode(): void
+    {
+        $repo = new AllowedUserRepositoryStub(new UserStub, ['status'], null, null, true);
+
+        $request = Request::create('/', 'GET', [
+            'filter' => [
+                'where' => [
+                    ['column' => 'status) or 1=1 --', 'value' => 'active'],
+                ],
+            ],
+        ]);
+
+        $this->expectException(InvalidRequestQueryException::class);
+        $this->expectExceptionMessage('Filter [status) or 1=1 --] is not allowed.');
+
+        $repo->fromRequest($request);
+    }
+
+    #[Test]
     public function it_applies_only_allowed_sorts_in_permissive_mode(): void
     {
         $repo = new AllowedUserRepositoryStub(new UserStub, null, ['name'], null, false);
@@ -107,6 +145,25 @@ class HasAllowedRequestQueryTest extends TestCase
 
         $this->expectException(InvalidRequestQueryException::class);
         $this->expectExceptionMessage('Sort [email] is not allowed.');
+
+        $repo->fromRequest($request);
+    }
+
+    #[Test]
+    public function it_requires_sort_allowlists_in_strict_mode(): void
+    {
+        $repo = new AllowedUserRepositoryStub(new UserStub, null, null, null, true);
+
+        $request = Request::create('/', 'GET', [
+            'filter' => [
+                'order' => [
+                    ['column' => 'email', 'direction' => 'desc'],
+                ],
+            ],
+        ]);
+
+        $this->expectException(InvalidRequestQueryException::class);
+        $this->expectExceptionMessage('Sort [email] is not allowed. Allowed sorts: [none].');
 
         $repo->fromRequest($request);
     }
@@ -175,6 +232,23 @@ class HasAllowedRequestQueryTest extends TestCase
 
         $this->expectException(InvalidRequestQueryException::class);
         $this->expectExceptionMessage('Field [email] is not allowed.');
+
+        $repo->fromRequest($request);
+    }
+
+    #[Test]
+    public function it_rejects_sql_like_field_names_in_strict_mode(): void
+    {
+        $repo = (new AllowedUserRepositoryStub(new UserStub, null, null, null, true))->withAllowedFields(['name']);
+
+        $request = Request::create('/', 'GET', [
+            'filter' => [
+                'fields' => ['name, (select password from users)'],
+            ],
+        ]);
+
+        $this->expectException(InvalidRequestQueryException::class);
+        $this->expectExceptionMessage('Field [(select password from users)] is not allowed.');
 
         $repo->fromRequest($request);
     }
@@ -293,6 +367,26 @@ class HasAllowedRequestQueryTest extends TestCase
 
         $this->expectException(InvalidRequestQueryException::class);
         $this->expectExceptionMessage('Relation count [posts] is not allowed.');
+
+        $repo->fromRequest($request);
+    }
+
+    #[Test]
+    public function it_throws_for_disallowed_aggregate_includes_in_strict_mode(): void
+    {
+        $repo = (new AllowedUserRepositoryStub(new UserStub, null, null, ['profile'], true))
+            ->withAggregateIncludes([
+                'postsVotesSum' => ['relation' => 'posts', 'column' => 'votes', 'function' => 'sum'],
+            ]);
+
+        $request = Request::create('/', 'GET', [
+            'filter' => [
+                'with' => ['postsVotesSum'],
+            ],
+        ]);
+
+        $this->expectException(InvalidRequestQueryException::class);
+        $this->expectExceptionMessage('Include [postsVotesSum] is not allowed.');
 
         $repo->fromRequest($request);
     }
@@ -486,6 +580,57 @@ class HasAllowedRequestQueryTest extends TestCase
     }
 
     #[Test]
+    public function it_throws_for_unsupported_request_query_operators_in_strict_mode(): void
+    {
+        $repo = new AllowedUserRepositoryStub(new UserStub, ['status'], null, null, true);
+
+        $request = Request::create('/', 'GET', [
+            'filter' => [
+                'where' => [
+                    ['column' => 'status', 'operator' => 'regexp', 'value' => '^active'],
+                ],
+            ],
+        ]);
+
+        $this->expectException(InvalidRequestQueryException::class);
+        $this->expectExceptionMessage('Request query operator [regexp] is not supported.');
+
+        $repo->fromRequest($request);
+    }
+
+    #[Test]
+    public function it_throws_for_unsupported_relation_filter_operators_in_strict_mode(): void
+    {
+        $repo = new AllowedUserRepositoryStub(
+            new UserStub,
+            null,
+            null,
+            null,
+            true,
+            null,
+            ['posts' => ['status']],
+        );
+
+        $request = Request::create('/', 'GET', [
+            'filter' => [
+                'whereHas' => [
+                    [
+                        'relation' => 'posts',
+                        'where' => [
+                            ['column' => 'status', 'operator' => 'regexp', 'value' => '^published'],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $this->expectException(InvalidRequestQueryException::class);
+        $this->expectExceptionMessage('Request query operator [regexp] is not supported.');
+
+        $repo->fromRequest($request);
+    }
+
+    #[Test]
     public function it_throws_for_invalid_request_query_clause_shapes_in_strict_mode(): void
     {
         $repo = new AllowedUserRepositoryStub(new UserStub, null, null, null, true);
@@ -520,7 +665,7 @@ class HasAllowedRequestQueryTest extends TestCase
     #[Test]
     public function it_throws_for_unknown_includes_in_strict_mode(): void
     {
-        $repo = new AllowedUserRepositoryStub(new UserStub, null, null, null, true);
+        $repo = new AllowedUserRepositoryStub(new UserStub, null, null, ['missingRelation'], true);
 
         $request = Request::create('/', 'GET', [
             'filter' => [
@@ -530,6 +675,36 @@ class HasAllowedRequestQueryTest extends TestCase
 
         $this->expectException(InvalidRequestQueryException::class);
         $this->expectExceptionMessage('Relation [missingRelation] does not exist on the repository model.');
+
+        $repo->fromRequest($request);
+    }
+
+    #[Test]
+    public function it_throws_for_unknown_relation_filter_paths_in_strict_mode(): void
+    {
+        $repo = new AllowedUserRepositoryStub(
+            new UserStub,
+            null,
+            null,
+            null,
+            true,
+            null,
+            ['posts.missing' => ['status']],
+        );
+
+        $request = Request::create('/', 'GET', [
+            'filter' => [
+                'whereHas' => [
+                    [
+                        'relation' => 'posts.missing',
+                        'where' => [['column' => 'status', 'value' => 'published']],
+                    ],
+                ],
+            ],
+        ]);
+
+        $this->expectException(InvalidRequestQueryException::class);
+        $this->expectExceptionMessage('Relation [posts.missing] does not exist on the repository model.');
 
         $repo->fromRequest($request);
     }

@@ -45,10 +45,12 @@ Use:
 Check that the change stays truthful to the current request-query surface:
 
 - allowlists and strict mode stay opt-in
+- strict mode rejects unsupported operators and requires allowlists for request-controlled names
+- request pagination guards respect `default_per_page` and `max_per_page`
 - aliases and scope definitions remain explicit metadata, not implicit global behavior
 - aggregate include helpers and value rules remain explicit metadata, not implicit global behavior
 - `RequestQueryParser` docs list only implemented clause families
-- tests cover parser output, permissive behavior, and strict-mode failures
+- tests cover parser output, permissive behavior, strict-mode failures, lifecycle reset, and cache wrapper boundaries when touched
 
 ### Update docs
 
@@ -95,7 +97,7 @@ When request-query behavior changes, keep these docs in sync at the same time:
 - `README.md`
 - `docs/README.md`
 - `docs/02-user-guide/request-query.md`
-- `docs/12-competitive-comparison-and-roadmap.md`
+- `docs/05-maintenance/competitive-comparison-and-roadmap.md`
 - AI-facing guidance files under `ai/skills/` and `.github/`
 
 ### Cursor

@@ -51,4 +51,29 @@ class HasCacheTest extends TestCase
         $this->assertSame(1, $stillCachedCount);
         $this->assertSame(2, $refreshedCount);
     }
+
+    #[Test]
+    public function it_can_use_custom_cache_store_and_compose_cache_keys(): void
+    {
+        config()->set('cache.stores.repository_test', [
+            'driver' => 'array',
+            'serialize' => false,
+        ]);
+
+        $repo = (new AllowedUserRepositoryStub(new UserStub))->useCacheStore('repository_test');
+        $key = $repo->cacheKey('users.count', ['status' => 'active', 1]);
+
+        $this->assertSame(
+            'Jooservices.LaravelRepository.Tests.Stubs.AllowedUserRepositoryStub.users.count.status:active.1',
+            $key,
+        );
+
+        $cached = $repo->rememberForever($key, static fn (): int => 10);
+        $again = $repo->rememberForever($key, static fn (): int => 20);
+
+        $this->assertSame(10, $cached);
+        $this->assertSame(10, $again);
+        $this->assertTrue($repo->forgetCache($key));
+        $this->assertSame(30, $repo->rememberForever($key, static fn (): int => 30));
+    }
 }

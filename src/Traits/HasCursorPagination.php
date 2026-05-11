@@ -22,10 +22,11 @@ trait HasCursorPagination
         $query = $this->getQuery();
         $this->ensureCursorPaginationOrder($query);
 
-        $result = $query->cursorPaginate($perPage, $columns, $cursorName, $cursor);
-        $this->query = null;
-
-        return $result;
+        try {
+            return $query->cursorPaginate($perPage, $columns, $cursorName, $cursor);
+        } finally {
+            $this->query = null;
+        }
     }
 
     /**

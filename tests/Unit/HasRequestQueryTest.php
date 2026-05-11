@@ -7,6 +7,7 @@ namespace Jooservices\LaravelRepository\Tests\Unit;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
+use Jooservices\LaravelRepository\Exceptions\InvalidRequestQueryException;
 use Jooservices\LaravelRepository\Tests\Stubs\AllowedUserRepositoryStub;
 use Jooservices\LaravelRepository\Tests\Stubs\PostStub;
 use Jooservices\LaravelRepository\Tests\Stubs\SearchUsersRequestFilterStub;
@@ -91,6 +92,43 @@ class HasRequestQueryTest extends TestCase
 
         $this->assertCount(1, $results);
         $this->assertSame(self::JOHN_NAME, $results->first()->name);
+    }
+
+    #[Test]
+    public function it_applies_supported_operator_aliases_from_request(): void
+    {
+        $this->repo->create(['name' => 'Low', 'email' => 'low@x.com', 'status' => 'active']);
+        $this->repo->create(['name' => 'High', 'email' => 'high@x.com', 'status' => 'pending']);
+
+        $request = Request::create('/', 'GET', [
+            'filter' => [
+                'where' => [
+                    ['column' => 'id', 'operator' => 'gte', 'value' => 2],
+                    ['column' => 'status', 'operator' => 'neq', 'value' => 'active'],
+                ],
+            ],
+        ]);
+
+        $results = $this->repo->fromRequest($request)->get();
+
+        $this->assertCount(1, $results);
+        $this->assertSame('High', $results->first()->name);
+    }
+
+    #[Test]
+    public function it_preserves_non_strict_operator_compatibility_for_raw_operators(): void
+    {
+        $this->repo->create(['name' => 'A', 'email' => self::ACTIVE_EMAIL, 'status' => 'active']);
+
+        $request = Request::create('/', 'GET', [
+            'filter' => [
+                'where' => [
+                    ['column' => 'status', 'operator' => '=', 'value' => 'active'],
+                ],
+            ],
+        ]);
+
+        $this->assertCount(1, $this->repo->fromRequest($request)->get());
     }
 
     #[Test]
@@ -721,6 +759,73 @@ class HasRequestQueryTest extends TestCase
         ]);
         $results = $this->repo->fromRequest($request)->get();
         $this->assertSame('A', $results->first()->name);
+    }
+
+    #[Test]
+    public function it_paginates_from_request_with_default_and_max_per_page_guards(): void
+    {
+        config()->set('laravel-repository.default_per_page', 2);
+        config()->set('laravel-repository.max_per_page', 3);
+
+        foreach (range(1, 5) as $index) {
+            $this->repo->create(['name' => 'User '.$index, 'email' => 'user'.$index.'@x.com', 'status' => 'active']);
+        }
+
+        $default = $this->repo->paginateFromRequest(Request::create('/', 'GET', []));
+        $tooLarge = $this->repo->paginateFromRequest(Request::create('/', 'GET', ['per_page' => 99]));
+        $invalid = $this->repo->paginateFromRequest(Request::create('/', 'GET', ['per_page' => 'many']));
+
+        $this->assertCount(2, $default->items());
+        $this->assertCount(3, $tooLarge->items());
+        $this->assertCount(2, $invalid->items());
+    }
+
+    #[Test]
+    public function it_throws_for_invalid_request_per_page_in_strict_mode(): void
+    {
+        $repo = new AllowedUserRepositoryStub(new UserStub, [], [], [], true);
+
+        $this->expectException(InvalidRequestQueryException::class);
+        $this->expectExceptionMessage(
+            'Request query per-page value [0] must be an integer greater than or equal to 1.',
+        );
+
+        $repo->paginateFromRequest(Request::create('/', 'GET', ['per_page' => 0]));
+    }
+
+    #[Test]
+    public function paginate_from_request_resets_query_when_request_query_fails(): void
+    {
+        $repo = new AllowedUserRepositoryStub(new UserStub, ['status'], [], [], true);
+        $repo->create(['name' => 'A', 'email' => self::ACTIVE_EMAIL, 'status' => 'active']);
+        $repo->create(['name' => 'B', 'email' => self::SECOND_EMAIL, 'status' => 'pending']);
+
+        try {
+            $repo->paginateFromRequest(Request::create('/', 'GET', [
+                'filter' => [
+                    'where' => [
+                        ['column' => 'status', 'value' => 'active'],
+                        ['column' => 'name', 'value' => 'A'],
+                    ],
+                ],
+            ]));
+            $this->fail('Expected strict request query validation to throw.');
+        } catch (InvalidRequestQueryException) {
+            $this->assertSame(2, $repo->count());
+        }
+    }
+
+    #[Test]
+    public function it_throws_for_too_large_request_per_page_in_strict_mode(): void
+    {
+        config()->set('laravel-repository.max_per_page', 2);
+
+        $repo = new AllowedUserRepositoryStub(new UserStub, [], [], [], true);
+
+        $this->expectException(InvalidRequestQueryException::class);
+        $this->expectExceptionMessage('Request query per-page value [3] exceeds the configured maximum of [2].');
+
+        $repo->paginateFromRequest(Request::create('/', 'GET', ['per_page' => 3]));
     }
 
     #[Test]
