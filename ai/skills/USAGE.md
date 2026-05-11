@@ -79,7 +79,8 @@ Use:
 
 For a release-prep change, also verify that:
 
-- `composer.json` carries the intended release version
+- the `vX.Y.Z` tag will carry the intended release version
+- `composer validate --strict` passes without a Composer `version` field
 - `CHANGELOG.md` matches the release line
 - release docs and examples use the intended branch and tag naming
 - AI-facing guidance still matches the documented release flow
