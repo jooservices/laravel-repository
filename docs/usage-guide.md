@@ -13,8 +13,8 @@ This legacy page remains as a compatibility entry point. For the current docs tr
 ### Requirements
 
 - PHP ^8.5
-- Laravel ^12.0
-- illuminate/contracts, illuminate/database, illuminate/support, illuminate/http ^12.0
+- Laravel ^12.0|^13.0
+- illuminate/contracts, illuminate/database, illuminate/support, illuminate/http ^12.0|^13.0
 
 ### Install via Composer
 

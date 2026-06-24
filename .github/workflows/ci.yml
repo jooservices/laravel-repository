@@ -84,9 +84,20 @@ jobs:
         uses: actions/dependency-review-action@v4
 
   tests:
-    name: Tests & Coverage
+    name: Tests & Coverage - Laravel ${{ matrix.laravel }}
     runs-on: ubuntu-latest
     needs: [lint]
+    strategy:
+      fail-fast: false
+      matrix:
+        laravel: ['12', '13']
+        include:
+          - laravel: '12'
+            testbench: '^10.0'
+            coverage: true
+          - laravel: '13'
+            testbench: '^11.0'
+            coverage: false
     steps:
       - name: Checkout code
         uses: actions/checkout@v6.0.2
@@ -95,15 +106,31 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ env.PHP_VERSION }}
-          coverage: pcov
+          coverage: ${{ matrix.coverage && 'pcov' || 'none' }}
 
       - name: Install Composer dependencies
         uses: ramsey/composer-install@v4
 
+      - name: Require Laravel ${{ matrix.laravel }}
+        run: |
+          composer require --no-update \
+            "illuminate/contracts:^${{ matrix.laravel }}.0" \
+            "illuminate/database:^${{ matrix.laravel }}.0" \
+            "illuminate/support:^${{ matrix.laravel }}.0" \
+            "illuminate/http:^${{ matrix.laravel }}.0"
+          composer require --no-update --dev "orchestra/testbench:${{ matrix.testbench }}"
+          composer update --prefer-dist --no-interaction
+
       - name: Run tests with coverage
+        if: matrix.coverage
         run: composer test:coverage
 
+      - name: Run tests
+        if: ${{ !matrix.coverage }}
+        run: composer test
+
       - name: Check coverage threshold
+        if: matrix.coverage
         run: |
           COVERAGE=$(php -r "
             \$xml = simplexml_load_file('build/coverage/clover.xml');
@@ -120,7 +147,7 @@ jobs:
           fi
 
       - name: Upload coverage to Codecov
-        if: env.CODECOV_TOKEN != '' && hashFiles('build/coverage/clover.xml') != ''
+        if: matrix.coverage && env.CODECOV_TOKEN != '' && hashFiles('build/coverage/clover.xml') != ''
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         uses: codecov/codecov-action@v5
@@ -131,6 +158,7 @@ jobs:
           verbose: true
 
       - name: Upload coverage artifacts
+        if: matrix.coverage
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
