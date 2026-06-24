@@ -127,7 +127,7 @@ jobs:
 
       - name: Run tests
         if: ${{ !matrix.coverage }}
-        run: composer test
+        run: composer test -- --no-coverage
 
       - name: Check coverage threshold
         if: matrix.coverage
