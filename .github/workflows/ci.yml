@@ -84,7 +84,7 @@ jobs:
         uses: actions/dependency-review-action@v4
 
   tests:
-    name: Tests & Coverage - Laravel ${{ matrix.laravel }}
+    name: Tests & Coverage
     runs-on: ubuntu-latest
     needs: [lint]
     strategy:
