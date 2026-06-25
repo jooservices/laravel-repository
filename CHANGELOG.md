@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-06-24
+
+### Added
+
+- Added Laravel 13 support alongside Laravel 12: `illuminate/contracts`, `illuminate/database`, `illuminate/support`, and `illuminate/http` now accept `^12.0|^13.0`
+- Added `orchestra/testbench:^11.0` to `require-dev` so the package can be tested against Laravel 13
+- Added a CI test matrix running the suite against both Laravel 12 and Laravel 13
+
+### Changed
+
+- Updated installation and usage docs to state the Laravel 12/13 support range
+
 ## [1.2.1] - 2026-05-12
 
 ### Changed
