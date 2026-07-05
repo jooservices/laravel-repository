@@ -1,0 +1,63 @@
+name: Feature request
+description: Suggest an improvement or new capability
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Suggest focused improvements that fit the package scope and current repository standards.
+  - type: textarea
+    id: problem-statement
+    attributes:
+      label: Problem statement
+      description: What problem are you trying to solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: Proposed solution
+      description: What change would you like to see?
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives-considered
+    attributes:
+      label: Alternatives considered
+      description: What alternatives or workarounds did you consider?
+    validations:
+      required: true
+  - type: textarea
+    id: package-use-case
+    attributes:
+      label: Repository or request-query use case
+      description: Describe the concrete repository workflow this would improve.
+    validations:
+      required: true
+  - type: textarea
+    id: bc-impact
+    attributes:
+      label: Backward compatibility impact
+      description: Could this change affect existing consumers or require migration?
+    validations:
+      required: true
+  - type: textarea
+    id: docs-testing
+    attributes:
+      label: Documentation and testing expectations
+      description: What docs, examples, or tests would need to change if this is accepted?
+    validations:
+      required: true
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: Confirmations
+      options:
+        - label: I checked existing issues and documentation before requesting this.
+          required: true
+        - label: I understand maintainers may reject changes that create unnecessary scope creep.
+          required: true
+        - label: This request is not for unrelated application-specific behavior outside the package scope.
+          required: true

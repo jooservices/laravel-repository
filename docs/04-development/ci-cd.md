@@ -40,6 +40,29 @@ Packagist publishing is active for stable version tags and depends on this repos
 - `secret-scanning.yml` runs the OSS `gitleaks` CLI against the repository and uploads a SARIF report without requiring a separate Gitleaks license secret.
 - If secret scanning is present but temporarily disabled, document that explicitly rather than implying active enforcement.
 
+## Branch protection and Git flow
+
+The repository ruleset `develop & master` protects both long-lived branches.
+
+Triggers:
+
+- push to `master` or `develop`
+- pull requests targeting `master` or `develop`
+
+In the approved Git flow:
+
+- feature and normal fix PRs are validated when they target `develop`
+- release and hotfix PRs are validated when they target `master`
+
+Required checks enforced by the ruleset:
+
+- GitGuardian Security Checks
+- Security Checks
+- Lint - Pint, PHPCS, PHPStan, PHPMD, PHP-CS-Fixer
+- Tests & Coverage
+
+Dependabot PRs should target `develop` through `.github/dependabot.yml`.
+
 ## Related documents
 
 - [Release Process](./release-process.md)

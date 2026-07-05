@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2026-07-06
+
+### Added
+
+- MIT `LICENSE`, `SECURITY.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, and GitHub issue templates
+- `composer.json` support block
+- `Support\RequestQueryInput` resolver for configurable request-query key priority
+- `EloquentRepository::newQueryWithCriteria()` for criteria-aware fresh builders
+- Contributor and branch-protection documentation under `docs/04-development/contributing.md`
+
+### Fixed
+
+- `request_key` config now controls `filter`/`query` read priority; both keys remain accepted
+- `find`, `findOrFail`, and `all` honor pushed criteria without inheriting filter-chain state
+
+### Changed
+
+- Bumped GitHub Actions: `actions/labeler@v6`, `actions/dependency-review-action@v5`, `codecov/codecov-action@v7`, `softprops/action-gh-release@v3`, and `amannn/action-semantic-pull-request@48f2562`
+- Bumped `phpstan/phpstan` to `^2.2`
+- Dependabot now targets `develop`
+- Removed unused `passesColumnGuard()` helper from `HasRequestQuery`
+
 ## [1.3.0] - 2026-06-24
 
 ### Added
@@ -68,6 +90,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Laravel ^12.0
 - illuminate/contracts, illuminate/database, illuminate/support, illuminate/http ^12.0
 
+[1.4.0]: https://github.com/jooservices/laravel-repository/releases/tag/v1.4.0
+[1.3.0]: https://github.com/jooservices/laravel-repository/releases/tag/v1.3.0
 [1.2.1]: https://github.com/jooservices/laravel-repository/releases/tag/v1.2.1
 [1.2.0]: https://github.com/jooservices/laravel-repository/releases/tag/v1.2.0
 [1.1.0]: https://github.com/jooservices/laravel-repository/releases/tag/v1.1.0

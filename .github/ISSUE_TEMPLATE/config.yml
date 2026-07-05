@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security Policy
+    url: https://github.com/jooservices/laravel-repository/security/policy
+    about: Report suspected vulnerabilities privately instead of opening a public issue.
+  - name: Documentation and usage guide
+    url: https://github.com/jooservices/laravel-repository#readme
+    about: Check the README and documentation hub before opening a general question.

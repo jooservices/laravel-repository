@@ -51,6 +51,7 @@ The package provides:
 - [Testing](./04-development/testing.md)
 - [CI/CD](./04-development/ci-cd.md)
 - [Release Process](./04-development/release-process.md)
+- [Contributing](./04-development/contributing.md)
 - [AI Skills](./04-development/ai-skills.md)
 
 ### Maintenance

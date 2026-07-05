@@ -31,13 +31,14 @@ The checked-in release workflow already declares the required permissions:
 
 Do not broaden these permissions unless the workflow behavior changes.
 
-### 3. Recommended branch and tag policy
+### 3. Branch and tag policy
 
-- Protect `master` and any long-lived integration branches your team actually uses.
-- Prepare release notes on a release branch such as `release/v1.2.0` when you want an isolated release-prep change set.
-- Create release tags only from the intended release commit.
+- Protect `master` and `develop` through the `develop & master` ruleset.
+- Prepare release notes on a release branch such as `release/v1.4.0` when you want an isolated release-prep change set.
+- Create release tags only from the intended release commit on `master`.
 - Use stable tags in the format `vX.Y.Z` for releases that should notify Packagist.
 - Pre-release tags such as `v1.2.3-beta.1` should not trigger the Packagist publish step.
+- After tagging, merge `master` back into `develop` so both branches stay synchronized.
 
 ## Packagist setup
 

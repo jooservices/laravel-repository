@@ -23,4 +23,5 @@ php artisan vendor:publish --tag=laravel-repository-config
 Published config options:
 
 - `default_per_page`
-- `request_key`
+- `max_per_page`
+- `request_key` — controls whether `filter` or `query` is read first; both keys remain accepted

@@ -2,7 +2,9 @@
 
 ## CRUD behavior
 
-`HasCrud` uses a fresh query for each operation. CRUD methods do not share the mutable filter chain state.
+`HasCrud` uses a fresh query for each operation. CRUD methods do not share the mutable filter chain state from `HasFilter` or `HasOrder`.
+
+When the repository also uses `HasCriteria`, `find`, `findOrFail`, and `all` honor pushed criteria on that fresh builder. `create` still uses a plain query because criteria filters must not affect inserts.
 
 ## Filter behavior
 

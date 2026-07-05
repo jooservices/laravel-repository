@@ -3,6 +3,10 @@
     "description": "PHP 8.5+ Laravel repository package for trait-based CRUD, filtering, ordering, and request-driven query composition",
     "keywords": ["laravel", "repository", "eloquent", "crud", "filtering", "ordering", "request-query"],
     "license": "MIT",
+    "support": {
+        "issues": "https://github.com/jooservices/laravel-repository/issues",
+        "source": "https://github.com/jooservices/laravel-repository"
+    },
     "authors": [
         {
             "name": "JOOservices",
@@ -23,7 +27,7 @@
         "laravel/pint": "^1.0",
         "orchestra/testbench": "^10.0|^11.0",
         "phpunit/phpunit": "^11.0",
-        "phpstan/phpstan": "~2.1.0",
+        "phpstan/phpstan": "^2.2",
         "phpmd/phpmd": "^2.0",
         "squizlabs/php_codesniffer": "^3.0"
     },
