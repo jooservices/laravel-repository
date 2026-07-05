@@ -20,4 +20,3 @@ The broader JOOservices ecosystem style prefers `JOOservices\*`. Renaming this p
 - A hard 90% coverage gate may require staged adoption if the current baseline is lower.
 - Hook and workflow additions introduce more contributor tooling and should stay documented.
 - Ratcheting PHPStan beyond level `6` should be handled as explicit typing work, not as a drive-by config change.
-- Packagist publication now depends on repository secrets being provisioned correctly; a missing or invalid secret will fail the `publish` job after GitHub release creation.

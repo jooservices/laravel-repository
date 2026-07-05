@@ -23,15 +23,14 @@ The repository workflow set is designed to include:
 
 ## Release baseline
 
-`release.yml` is tag-driven through `vX.Y.Z` tags and should validate tests before publishing release artifacts.
+`release.yml` is tag-driven through `vX.Y.Z` tags and runs the same quality gate as CI before creating the GitHub Release:
 
-Packagist publishing is active for stable version tags and depends on this repository secrets contract:
+- `composer validate --strict`
+- `composer audit`
+- `composer lint:all`
+- `composer ci` with the coverage threshold check
 
-- `PACKAGIST_TOKEN`: a Packagist API token with `update-package` access
-- Packagist username used by the workflow: `jooservices`
-- repository URL sent to Packagist: `https://github.com/jooservices/laravel-repository`
-- trigger point: after the GitHub release job succeeds for a stable `vX.Y.Z` tag
-- failure mode: the `publish` job fails the workflow if the token is missing or the Packagist update request fails
+Packagist is not updated by this workflow. Refresh Packagist manually when you want the registry metadata to catch up with a new tag.
 
 ## Policy notes
 

@@ -126,7 +126,6 @@ The CI baseline covers security checks, linting, tests with coverage artifacts, 
 Current external service integrations:
 
 - `Codecov` for CI coverage uploads when `CODECOV_TOKEN` is configured
-- `Packagist` for release-time package update notifications
 
 ## Changelog
 
