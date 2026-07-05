@@ -108,6 +108,8 @@ composer test
 
 Contributor workflow details live in:
 
+- [Contributing](CONTRIBUTING.md)
+- [Security Policy](SECURITY.md)
 - [Setup](docs/04-development/setup.md)
 - [Coding Standards](docs/04-development/coding-standards.md)
 - [Testing](docs/04-development/testing.md)

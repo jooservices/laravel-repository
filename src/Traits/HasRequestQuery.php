@@ -16,6 +16,7 @@ use Jooservices\LaravelRepository\Contracts\ProvidesRequestQueryMetadataInterfac
 use Jooservices\LaravelRepository\Contracts\RequestFilterInterface;
 use Jooservices\LaravelRepository\Exceptions\InvalidRequestQueryException;
 use Jooservices\LaravelRepository\Support\QueryOperator;
+use Jooservices\LaravelRepository\Support\RequestQueryInput;
 use Jooservices\LaravelRepository\Support\RequestQueryParser;
 use Jooservices\LaravelRepository\Support\RequestQueryValueNormalizer;
 use LogicException;
@@ -117,7 +118,7 @@ trait HasRequestQuery
      */
     private function requestQueryData(Request $request): array
     {
-        $data = $request->input('filter') ?? $request->input('query') ?? [];
+        $data = RequestQueryInput::resolve($request);
 
         if (! is_array($data)) {
             if ($this->requestQueryStrictMode()) {
@@ -852,14 +853,6 @@ trait HasRequestQuery
         }
 
         return $this->resolveFilterAlias($column);
-    }
-
-    /**
-     * @param  callable(string): bool|null  $guard
-     */
-    private function passesColumnGuard(string $column, ?callable $guard): bool
-    {
-        return $guard ? $guard($column) : $this->shouldApplyFilter($column);
     }
 
     private function scopeExists(string $scope): bool

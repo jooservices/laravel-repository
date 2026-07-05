@@ -85,7 +85,7 @@ class RequestQueryParser
      */
     public static function fromRequest(Request $request): array
     {
-        $data = $request->input('filter') ?? $request->input('query') ?? [];
+        $data = RequestQueryInput::resolve($request);
 
         if (! is_array($data)) {
             return self::emptyClauses();

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Jooservices\LaravelRepository\Tests\Unit;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Jooservices\LaravelRepository\Tests\Stubs\ActiveStatusCriteriaStub;
+use Jooservices\LaravelRepository\Tests\Stubs\AllowedUserRepositoryStub;
 use Jooservices\LaravelRepository\Tests\Stubs\UserRepositoryStub;
 use Jooservices\LaravelRepository\Tests\Stubs\UserStub;
 use Jooservices\LaravelRepository\Tests\TestCase;
@@ -97,5 +99,25 @@ class HasCrudTest extends TestCase
         $result = $this->repo->delete($user->id);
         $this->assertTrue($result);
         $this->assertNull($this->repo->find($user->id));
+    }
+
+    #[Test]
+    public function find_and_all_honor_pushed_criteria_without_filter_chain_state(): void
+    {
+        $repo = new AllowedUserRepositoryStub(new UserStub);
+        $active = $repo->create(['name' => 'Active', 'email' => 'active@x.com', 'status' => 'active']);
+        $pending = $repo->create(['name' => 'Pending', 'email' => 'pending@x.com', 'status' => 'pending']);
+
+        $repo->pushCriteria(new ActiveStatusCriteriaStub);
+
+        $this->assertSame($active->id, $repo->find($active->id)?->id);
+        $this->assertNull($repo->find($pending->id));
+        $this->assertCount(1, $repo->all());
+
+        $repo->filter(['name' => 'Active']);
+
+        $this->assertSame($active->id, $repo->find($active->id)?->id);
+        $this->assertNull($repo->find($pending->id));
+        $this->assertCount(1, $repo->all());
     }
 }

@@ -11,12 +11,12 @@ trait HasCrud
 {
     public function find(int|string $id): ?Model
     {
-        return $this->getModel()->newQuery()->find($id);
+        return $this->crudQuery()->find($id);
     }
 
     public function findOrFail(int|string $id): Model
     {
-        return $this->getModel()->newQuery()->findOrFail($id);
+        return $this->crudQuery()->findOrFail($id);
     }
 
     /**
@@ -24,7 +24,19 @@ trait HasCrud
      */
     public function all(): Collection
     {
-        return $this->getModel()->newQuery()->get();
+        return $this->crudQuery()->get();
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Builder<Model>
+     */
+    private function crudQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        if (method_exists($this, 'newQueryWithCriteria')) {
+            return $this->newQueryWithCriteria();
+        }
+
+        return $this->getModel()->newQuery();
     }
 
     /**

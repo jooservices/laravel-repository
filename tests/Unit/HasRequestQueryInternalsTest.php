@@ -591,12 +591,6 @@ class HasRequestQueryInternalsTest extends TestCase
             ['scope' => 'email_domain', 'parameters' => ['test.com']],
             $this->invokePrivate($repo, 'resolveScopeClause', ['domain', ['test.com']]),
         );
-        $this->assertTrue($this->invokePrivate($repo, 'passesColumnGuard', ['status', null]));
-        $this->assertFalse($this->invokePrivate(
-            $repo,
-            'passesColumnGuard',
-            ['email', static fn (string $column): bool => $column === 'status'],
-        ));
         $this->assertTrue($this->invokePrivate($repo, 'relationExists', ['posts.user']));
         $this->assertFalse($this->invokePrivate($repo, 'relationExists', ['posts.missing']));
 

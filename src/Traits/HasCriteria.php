@@ -7,6 +7,9 @@ namespace Jooservices\LaravelRepository\Traits;
 use Illuminate\Database\Eloquent\Builder;
 use Jooservices\LaravelRepository\Contracts\CriteriaInterface;
 
+/**
+ * @phpstan-require-extends \Jooservices\LaravelRepository\Repositories\EloquentRepository
+ */
 trait HasCriteria
 {
     /**
@@ -73,5 +76,21 @@ trait HasCriteria
         }
 
         $this->criteriaQueryId = $queryId;
+    }
+
+    /**
+     * Fresh builder with pushed criteria applied, without mutable filter-chain state.
+     *
+     * @return Builder<\Illuminate\Database\Eloquent\Model>
+     */
+    protected function newQueryWithCriteria(): Builder
+    {
+        $query = $this->newQuery();
+
+        foreach ($this->criteria as $criteria) {
+            $criteria->apply($query);
+        }
+
+        return $query;
     }
 }

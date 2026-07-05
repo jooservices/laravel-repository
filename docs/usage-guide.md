@@ -33,7 +33,7 @@ php artisan vendor:publish --tag=laravel-repository-config
 This creates `config/laravel-repository.php` with:
 
 - `default_per_page`: default for `paginate()` (default: 15)
-- `request_key`: key used for request input (`filter` or `query`)
+- `request_key`: primary request input key (`filter` or `query`); the alternate key remains accepted as fallback
 
 ---
 

@@ -96,6 +96,8 @@ $users = $repository
 
 Criteria are applied once per active builder. Popping or clearing criteria resets query state so the next terminal call starts from a fresh builder.
 
+`HasCrud` read methods (`find`, `findOrFail`, and `all`) honor pushed criteria but do not inherit active filter or order chain state.
+
 ## Cache Wrapper
 
 ```php
