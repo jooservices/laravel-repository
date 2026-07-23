@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-07-23
+
 ### Fixed
 
 - Sparse `fields` projections combined with root `with` includes now preserve `BelongsTo` foreign keys and `MorphTo` foreign key / morph type columns so eager-loaded relations hydrate correctly
@@ -107,6 +109,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Laravel ^12.0
 - illuminate/contracts, illuminate/database, illuminate/support, illuminate/http ^12.0
 
+[1.5.0]: https://github.com/jooservices/laravel-repository/releases/tag/v1.5.0
 [1.4.0]: https://github.com/jooservices/laravel-repository/releases/tag/v1.4.0
 [1.3.0]: https://github.com/jooservices/laravel-repository/releases/tag/v1.3.0
 [1.2.1]: https://github.com/jooservices/laravel-repository/releases/tag/v1.2.1
