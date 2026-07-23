@@ -51,6 +51,7 @@
     "scripts": {
         "test": "phpunit",
         "test:coverage": "phpunit --coverage-html build/coverage/html --coverage-clover build/coverage/clover.xml",
+        "test:coverage:check": "php scripts/check-coverage.php",
         "lint:pint": "pint --test",
         "lint:pint:fix": "pint",
         "lint:phpcs": "phpcs --standard=phpcs.xml.dist",
@@ -79,7 +80,8 @@
         ],
         "ci": [
             "@lint:all",
-            "@test:coverage"
+            "@test:coverage",
+            "@test:coverage:check"
         ],
         "post-install-cmd": "@hooks:install",
         "post-update-cmd": "@hooks:install"

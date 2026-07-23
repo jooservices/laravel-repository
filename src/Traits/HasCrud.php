@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace Jooservices\LaravelRepository\Traits;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 
+/**
+ * @phpstan-require-extends \Jooservices\LaravelRepository\Repositories\EloquentRepository
+ */
 trait HasCrud
 {
     public function find(int|string $id): ?Model
@@ -28,15 +32,11 @@ trait HasCrud
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Builder<Model>
+     * @return Builder<Model>
      */
-    private function crudQuery(): \Illuminate\Database\Eloquent\Builder
+    private function crudQuery(): Builder
     {
-        if (method_exists($this, 'newQueryWithCriteria')) {
-            return $this->newQueryWithCriteria();
-        }
-
-        return $this->getModel()->newQuery();
+        return $this->newQueryWithCriteria();
     }
 
     /**

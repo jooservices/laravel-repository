@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+## [1.5.0] - 2026-07-23
+
+### Fixed
+
+- Sparse `fields` projections combined with root `with` includes now preserve `BelongsTo` foreign keys and `MorphTo` foreign key / morph type columns so eager-loaded relations hydrate correctly
+- `fromRequest()` clears fluent query state on any request-query failure (including validation before a builder is created), so later queries do not inherit prior chain state
+- Release validation now enforces the same statement coverage threshold as CI
+
+### Changed
+
+- `EloquentRepository` owns `newQueryWithCriteria()` as the criteria-aware CRUD extension hook; CRUD no longer discovers the method via `method_exists`
+- `composer ci` now runs `test:coverage:check` via the shared `scripts/check-coverage.php` helper
+
+### Security
+
+- Bumped transitive `guzzlehttp/guzzle` to `7.15.1` (merged via Dependabot)
+
 ## [1.4.0] - 2026-07-06
 
 ### Added
@@ -90,6 +109,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Laravel ^12.0
 - illuminate/contracts, illuminate/database, illuminate/support, illuminate/http ^12.0
 
+[1.5.0]: https://github.com/jooservices/laravel-repository/releases/tag/v1.5.0
 [1.4.0]: https://github.com/jooservices/laravel-repository/releases/tag/v1.4.0
 [1.3.0]: https://github.com/jooservices/laravel-repository/releases/tag/v1.3.0
 [1.2.1]: https://github.com/jooservices/laravel-repository/releases/tag/v1.2.1

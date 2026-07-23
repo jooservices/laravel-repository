@@ -212,6 +212,13 @@ $users = $repository->fromRequest($request)->get();
 
 `fields` limits the selected columns on the root model and always keeps the model key column so hydrated models remain usable.
 
+When `fields` is combined with root `with` includes that hydrate models, the package also preserves owner keys required for matching:
+
+- `BelongsTo` foreign keys on the root model
+- `MorphTo` foreign key and morph type columns on the root model
+
+Those safety columns are retained automatically even when they are not listed in the request fields (and even when they are absent from a strict fields allowlist). Aggregate includes such as `*Count` or `*Exists` do not force foreign keys because they do not hydrate related models.
+
 `filters` maps request keys to dedicated filter classes or lightweight callbacks. This is useful for domain filters like `search`, `owned_by_me`, or `published` without forcing callers to build low-level `where` arrays.
 
 `has` adds relation-count constraints such as `posts >= 2` without dropping down to a raw builder.

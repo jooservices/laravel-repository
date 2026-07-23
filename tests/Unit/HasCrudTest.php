@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Jooservices\LaravelRepository\Tests\Unit;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Jooservices\LaravelRepository\Tests\Stubs\ActiveStatusCriteriaStub;
 use Jooservices\LaravelRepository\Tests\Stubs\AllowedUserRepositoryStub;
@@ -115,6 +116,28 @@ class HasCrudTest extends TestCase
         $this->assertCount(1, $repo->all());
 
         $repo->filter(['name' => 'Active']);
+
+        $this->assertSame($active->id, $repo->find($active->id)?->id);
+        $this->assertNull($repo->find($pending->id));
+        $this->assertCount(1, $repo->all());
+    }
+
+    #[Test]
+    public function crud_reads_honor_the_new_query_with_criteria_extension_hook(): void
+    {
+        $repo = new class(new UserStub) extends UserRepositoryStub
+        {
+            /**
+             * @return Builder<UserStub>
+             */
+            protected function newQueryWithCriteria(): Builder
+            {
+                return parent::newQueryWithCriteria()->where('status', 'active');
+            }
+        };
+
+        $active = $repo->create(['name' => 'Active', 'email' => 'hook-active@x.com', 'status' => 'active']);
+        $pending = $repo->create(['name' => 'Pending', 'email' => 'hook-pending@x.com', 'status' => 'pending']);
 
         $this->assertSame($active->id, $repo->find($active->id)?->id);
         $this->assertNull($repo->find($pending->id));

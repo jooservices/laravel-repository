@@ -11,7 +11,7 @@ class PostStub extends Model
 {
     protected $table = 'posts';
 
-    protected $fillable = ['user_id', 'title', 'status', 'votes'];
+    protected $fillable = ['user_id', 'author_id', 'title', 'status', 'votes'];
 
     public $timestamps = true;
 
@@ -21,5 +21,15 @@ class PostStub extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(UserStub::class, 'user_id');
+    }
+
+    /**
+     * Custom foreign key BelongsTo for projection regression coverage.
+     *
+     * @return BelongsTo<UserStub, $this>
+     */
+    public function author(): BelongsTo
+    {
+        return $this->belongsTo(UserStub::class, 'author_id');
     }
 }

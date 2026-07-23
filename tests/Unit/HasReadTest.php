@@ -82,4 +82,21 @@ class HasReadTest extends TestCase
         $this->assertSame(1, $this->repo->filter(['status' => 'pending'])->count());
         $this->assertSame(2, $this->repo->count());
     }
+
+    #[Test]
+    public function first_or_fail_exception_resets_query_for_cross_query_isolation(): void
+    {
+        $this->repo->create(['name' => 'Visible', 'email' => 'visible2@x.com', 'status' => 'active']);
+        $this->repo->create(['name' => 'Other', 'email' => 'other2@x.com', 'status' => 'pending']);
+
+        try {
+            $this->repo->filter(['status' => 'missing'])->firstOrFail();
+            $this->fail('Expected firstOrFail to throw.');
+        } catch (ModelNotFoundException) {
+            $pending = $this->repo->filter(['status' => 'pending'])->get();
+            $this->assertCount(1, $pending);
+            $this->assertSame('Other', $pending->first()->name);
+            $this->assertSame(2, $this->repo->count());
+        }
+    }
 }

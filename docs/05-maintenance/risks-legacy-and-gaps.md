@@ -19,4 +19,5 @@ The broader JOOservices ecosystem style prefers `JOOservices\*`. Renaming this p
 - Raising lint rigor may expose existing issues that were previously tolerated.
 - A hard 90% coverage gate may require staged adoption if the current baseline is lower.
 - Hook and workflow additions introduce more contributor tooling and should stay documented.
-- Ratcheting PHPStan beyond level `6` should be handled as explicit typing work, not as a drive-by config change.
+- PHPStan remains at level `6`. Raising it further (for example to level `7` with full repository generics) must be an explicit typing pass, not a drive-by config change.
+- Sparse `fields` + root `with` projections preserve BelongsTo/MorphTo owner keys; nested include edge cases should still be regression-tested when relation metadata is customized.
