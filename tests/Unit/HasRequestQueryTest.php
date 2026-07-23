@@ -816,6 +816,59 @@ class HasRequestQueryTest extends TestCase
     }
 
     #[Test]
+    public function from_request_exception_resets_query_for_later_queries(): void
+    {
+        $repo = new AllowedUserRepositoryStub(new UserStub, ['status'], [], [], true);
+        $repo->create(['name' => 'A', 'email' => self::ACTIVE_EMAIL, 'status' => 'active']);
+        $repo->create(['name' => 'B', 'email' => self::SECOND_EMAIL, 'status' => 'pending']);
+
+        try {
+            $repo->fromRequest(Request::create('/', 'GET', [
+                'filter' => [
+                    'where' => [
+                        ['column' => 'status', 'value' => 'active'],
+                        ['column' => 'name', 'value' => 'A'],
+                    ],
+                ],
+            ]))->get();
+            $this->fail('Expected strict request query validation to throw.');
+        } catch (InvalidRequestQueryException) {
+            $results = $repo->filter(['status' => 'pending'])->get();
+            $this->assertCount(1, $results);
+            $this->assertSame('B', $results->first()->name);
+            $this->assertSame(2, $repo->count());
+        }
+    }
+
+    #[Test]
+    public function from_request_operator_validation_failure_resets_existing_fluent_state(): void
+    {
+        $repo = new AllowedUserRepositoryStub(new UserStub, ['status'], [], [], true);
+        $repo->create(['name' => 'A', 'email' => self::ACTIVE_EMAIL, 'status' => 'active']);
+        $repo->create(['name' => 'B', 'email' => self::SECOND_EMAIL, 'status' => 'pending']);
+
+        // Seed fluent state before a request-query failure that throws prior to getQuery().
+        $repo->filter(['status' => 'active']);
+
+        try {
+            $repo->fromRequest(Request::create('/', 'GET', [
+                'filter' => [
+                    'where' => [
+                        ['column' => 'status', 'operator' => 'not-a-real-operator', 'value' => 'active'],
+                    ],
+                ],
+            ]));
+            $this->fail('Expected unsupported operator validation to throw.');
+        } catch (InvalidRequestQueryException $exception) {
+            $this->assertStringContainsString('not supported', $exception->getMessage());
+            $results = $repo->filter(['status' => 'pending'])->get();
+            $this->assertCount(1, $results);
+            $this->assertSame('B', $results->first()->name);
+            $this->assertSame(2, $repo->count());
+        }
+    }
+
+    #[Test]
     public function it_throws_for_too_large_request_per_page_in_strict_mode(): void
     {
         config()->set('laravel-repository.max_per_page', 2);

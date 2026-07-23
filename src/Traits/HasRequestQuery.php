@@ -7,6 +7,9 @@ namespace Jooservices\LaravelRepository\Traits;
 use Closure;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -20,6 +23,7 @@ use Jooservices\LaravelRepository\Support\RequestQueryInput;
 use Jooservices\LaravelRepository\Support\RequestQueryParser;
 use Jooservices\LaravelRepository\Support\RequestQueryValueNormalizer;
 use LogicException;
+use Throwable;
 
 /**
  * @phpstan-import-type QueryClauses from RequestQueryParser
@@ -69,30 +73,41 @@ trait HasRequestQuery
 
     public function fromRequest(Request $request): static
     {
-        $data = $this->requestQueryData($request);
-        $this->assertSupportedRequestQuery($data);
+        try {
+            $data = $this->requestQueryData($request);
+            $this->assertSupportedRequestQuery($data);
 
-        $clauses = RequestQueryParser::parse($data);
-        $this->assertSupportedRequestOperators($clauses);
-        $query = $this->getQuery();
-        $filterValueResolver = fn (string $column, mixed $value): mixed => $this->normalizeFilterValue($column, $value);
+            $clauses = RequestQueryParser::parse($data);
+            $this->assertSupportedRequestOperators($clauses);
 
-        $this->applyFieldClauses($query, $clauses['fields']);
-        $this->applyNamedFilterClauses($query, $clauses['filters']);
-        $this->applyWhereClauses($query, $clauses['where'], null, $filterValueResolver);
-        $this->applyOrWhereClauses($query, $clauses['orWhere'], null, $filterValueResolver);
-        $this->applyWhereInClauses($query, $clauses['whereIn'], null, $filterValueResolver);
-        $this->applyWhereBetweenClauses($query, $clauses['whereBetween'], null, $filterValueResolver);
-        $this->applyWhereNullClauses($query, $clauses['whereNull']);
-        $this->applyWhereNotNullClauses($query, $clauses['whereNotNull']);
-        $this->applyScopeClauses($query, $clauses['scope']);
-        $this->applyHasClauses($query, $clauses['has']);
-        $this->applyWhereHasClauses($query, $clauses['whereHas']);
-        $this->applyOrWhereHasClauses($query, $clauses['orWhereHas']);
-        $this->applyWhereDoesntHaveClauses($query, $clauses['whereDoesntHave']);
-        $this->applyOrWhereDoesntHaveClauses($query, $clauses['orWhereDoesntHave']);
-        $this->applyIncludeClauses($query, $clauses['with']);
-        $this->applyOrderClauses($query, $clauses['order']);
+            $query = $this->getQuery();
+            $filterValueResolver = function (string $column, mixed $value): mixed {
+                return $this->normalizeFilterValue($column, $value);
+            };
+
+            $this->applyFieldClauses($query, $clauses['fields'], $clauses['with']);
+            $this->applyNamedFilterClauses($query, $clauses['filters']);
+            $this->applyWhereClauses($query, $clauses['where'], null, $filterValueResolver);
+            $this->applyOrWhereClauses($query, $clauses['orWhere'], null, $filterValueResolver);
+            $this->applyWhereInClauses($query, $clauses['whereIn'], null, $filterValueResolver);
+            $this->applyWhereBetweenClauses($query, $clauses['whereBetween'], null, $filterValueResolver);
+            $this->applyWhereNullClauses($query, $clauses['whereNull']);
+            $this->applyWhereNotNullClauses($query, $clauses['whereNotNull']);
+            $this->applyScopeClauses($query, $clauses['scope']);
+            $this->applyHasClauses($query, $clauses['has']);
+            $this->applyWhereHasClauses($query, $clauses['whereHas']);
+            $this->applyOrWhereHasClauses($query, $clauses['orWhereHas']);
+            $this->applyWhereDoesntHaveClauses($query, $clauses['whereDoesntHave']);
+            $this->applyOrWhereDoesntHaveClauses($query, $clauses['orWhereDoesntHave']);
+            $this->applyIncludeClauses($query, $clauses['with']);
+            $this->applyOrderClauses($query, $clauses['order']);
+        } catch (Throwable $exception) {
+            // Any request-query failure must drop fluent state so later calls start clean,
+            // including validation failures that throw before a new builder is created.
+            $this->query = null;
+
+            throw $exception;
+        }
 
         return $this;
     }
@@ -100,7 +115,7 @@ trait HasRequestQuery
     /**
      * Apply request query clauses and paginate with package request per-page guards.
      *
-     * @return LengthAwarePaginator<int, \Illuminate\Database\Eloquent\Model>
+     * @return LengthAwarePaginator<int, Model>
      */
     public function paginateFromRequest(Request $request, string $perPageKey = 'per_page'): LengthAwarePaginator
     {
@@ -184,8 +199,9 @@ trait HasRequestQuery
     /**
      * @param  Builder<*>  $query
      * @param  list<string>  $clauses
+     * @param  list<string>  $includes
      */
-    private function applyFieldClauses(Builder $query, array $clauses): void
+    private function applyFieldClauses(Builder $query, array $clauses, array $includes = []): void
     {
         if ($clauses === []) {
             return;
@@ -211,7 +227,61 @@ trait HasRequestQuery
             array_unshift($selected, $keyColumn);
         }
 
+        $selected = $this->preserveOwnerKeysForIncludes($model, $selected, $includes);
+
         $query->select(array_values(array_unique($selected)));
+    }
+
+    /**
+     * Keep root foreign (and morph type) keys required by BelongsTo/MorphTo includes.
+     *
+     * Sparse field projections that omit these keys cause Eloquent to leave
+     * eager-loaded relations null even when the related rows were loaded.
+     *
+     * Auto-preserved keys are not subject to the fields allowlist: they are
+     * internal safety columns for requested root eager loads, not user fields.
+     *
+     * @param  list<string>  $selected
+     * @param  list<string>  $includes
+     * @return list<string>
+     */
+    private function preserveOwnerKeysForIncludes(Model $model, array $selected, array $includes): array
+    {
+        if ($includes === []) {
+            return $selected;
+        }
+
+        $ownerKeys = [];
+
+        foreach ($includes as $requestedInclude) {
+            $include = $this->resolveIncludeRequest($requestedInclude);
+            if ($include === null || $include['type'] !== 'relation') {
+                continue;
+            }
+
+            $rootRelation = Str::before($include['relation'], '.');
+            if ($rootRelation === '' || ! $this->relationExists($rootRelation)) {
+                continue;
+            }
+
+            $relation = $model->{$rootRelation}();
+            if ($relation instanceof BelongsTo) {
+                $ownerKeys[] = $model->qualifyColumn($relation->getForeignKeyName());
+            }
+
+            if ($relation instanceof MorphTo) {
+                $ownerKeys[] = $model->qualifyColumn($relation->getForeignKeyName());
+                $ownerKeys[] = $model->qualifyColumn($relation->getMorphType());
+            }
+        }
+
+        foreach ($ownerKeys as $column) {
+            if (! in_array($column, $selected, true)) {
+                $selected[] = $column;
+            }
+        }
+
+        return $selected;
     }
 
     /**

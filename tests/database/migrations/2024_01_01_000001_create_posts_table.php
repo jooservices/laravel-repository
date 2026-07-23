@@ -13,6 +13,7 @@ return new class extends Migration
         Schema::create('posts', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
+            $table->foreignId('author_id')->nullable()->constrained('users')->nullOnDelete();
             $table->string('title');
             $table->string('status')->default('draft');
             $table->unsignedInteger('votes')->default(0);

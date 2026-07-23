@@ -70,4 +70,21 @@ class HasFilterTest extends TestCase
 
         $this->assertCount(2, $this->repo->get());
     }
+
+    #[Test]
+    public function successive_filtered_queries_do_not_leak_prior_filters(): void
+    {
+        $this->repo->create(['name' => 'A', 'email' => 'a-cross@x.com', 'status' => 'active']);
+        $this->repo->create(['name' => 'B', 'email' => 'b-cross@x.com', 'status' => 'pending']);
+
+        $active = $this->repo->filter(['status' => 'active'])->get();
+        $pending = $this->repo->filter(['status' => 'pending'])->get();
+        $all = $this->repo->get();
+
+        $this->assertCount(1, $active);
+        $this->assertSame('A', $active->first()->name);
+        $this->assertCount(1, $pending);
+        $this->assertSame('B', $pending->first()->name);
+        $this->assertCount(2, $all);
+    }
 }

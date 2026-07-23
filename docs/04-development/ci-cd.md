@@ -27,14 +27,22 @@ The repository workflow set is designed to include:
 
 - `composer validate --strict`
 - `composer audit`
-- `composer lint:all`
-- `composer ci` with the coverage threshold check
+- `composer ci` (lint, tests with coverage, and the shared 90% coverage threshold check)
 
 Packagist is not updated by this workflow. Refresh Packagist manually when you want the registry metadata to catch up with a new tag.
 
+## Coverage threshold
+
+Statement coverage is enforced by `scripts/check-coverage.php` (default threshold `90`, overridable with `COVERAGE_THRESHOLD`):
+
+- `composer test:coverage` generates `build/coverage/clover.xml`
+- `composer test:coverage:check` asserts the threshold
+- `composer ci` runs both after the full lint suite
+- CI and release workflows both rely on this shared script
+
 ## Policy notes
 
-- Keep the documented coverage threshold aligned with the workflow implementation.
+- Keep the documented coverage threshold aligned with the workflow implementation and `scripts/check-coverage.php`.
 - Codecov upload runs only when `CODECOV_TOKEN` is configured and the coverage report was generated successfully.
 - `secret-scanning.yml` runs the OSS `gitleaks` CLI against the repository and uploads a SARIF report without requiring a separate Gitleaks license secret.
 - If secret scanning is present but temporarily disabled, document that explicitly rather than implying active enforcement.

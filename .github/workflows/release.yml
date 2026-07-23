@@ -20,6 +20,7 @@ permissions:
 
 env:
   PHP_VERSION: '8.5'
+  COVERAGE_THRESHOLD: '90'
 
 jobs:
   validate:
@@ -46,10 +47,9 @@ jobs:
       - name: Run security audit
         run: composer audit
 
-      - name: Run lint checks
-        run: composer lint:all
-
-      - name: Run tests with coverage gate
+      - name: Run tests, lint, and coverage gate
+        env:
+          COVERAGE_THRESHOLD: ${{ env.COVERAGE_THRESHOLD }}
         run: composer ci
 
   release:
