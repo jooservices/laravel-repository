@@ -5,8 +5,8 @@ This repository is a PHP 8.5+ Laravel package named `jooservices/laravel-reposit
 ## Mandatory PHP namespace
 
 **FORCE ALWAYS** use `JOOservices\LaravelRepository\` (uppercase `OO`) for all
-package code, docs, skills, and examples. Never use `Jooservices\` or
-`JooServices\`. Composer package name stays `jooservices/laravel-repository`.
+package code, docs, skills, and examples. Do not use alternate namespace casing.
+Composer package name stays `jooservices/laravel-repository`.
 
 ## Core intent
 
