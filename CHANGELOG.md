@@ -11,11 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Renamed the public PHP root namespace from `Jooservices\LaravelRepository` to
+- Standardized the public PHP root namespace as
   `JOOservices\LaravelRepository` (uppercase `OO`) across source, tests, docs,
   and agent skills. Composer package name remains `jooservices/laravel-repository`.
-- Consumers must update `use` / type-hints / service provider references from
-  `Jooservices\…` to `JOOservices\…` when upgrading.
+- Consumers must use `JOOservices\…` in imports, type hints, and service
+  provider references when upgrading.
 
 
 ## [1.5.0] - 2026-07-23

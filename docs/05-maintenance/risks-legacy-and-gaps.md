@@ -11,11 +11,11 @@
 ## Namespace
 
 Current public code and examples use the namespace `JOOservices\LaravelRepository`
-(uppercase `OO`). Do not introduce `Jooservices\` or `JooServices\` aliases.
+(uppercase `OO`). Do not introduce aliases with alternate namespace casing.
 Composer package name remains `jooservices/laravel-repository`.
 
-Consumers that still import `Jooservices\LaravelRepository\…` must update to
-`JOOservices\LaravelRepository\…` when upgrading to `1.6.0` or later.
+Consumers must import `JOOservices\LaravelRepository\…` when upgrading to
+`1.6.0` or later.
 
 ## Governance rollout risks
 
