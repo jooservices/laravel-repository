@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Jooservices\LaravelRepository\Traits;
+namespace JOOservices\LaravelRepository\Traits;
 
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
-use Jooservices\LaravelRepository\Contracts\RequestFilterInterface;
+use JOOservices\LaravelRepository\Contracts\RequestFilterInterface;
 
 trait HasRequestFilters
 {

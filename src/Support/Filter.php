@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Jooservices\LaravelRepository\Support;
+namespace JOOservices\LaravelRepository\Support;
 
 use Illuminate\Database\Eloquent\Builder;
-use Jooservices\LaravelRepository\Contracts\FilterInterface;
+use JOOservices\LaravelRepository\Contracts\FilterInterface;
 
 readonly class Filter implements FilterInterface
 {

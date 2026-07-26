@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Jooservices\LaravelRepository\Tests\Unit;
+namespace JOOservices\LaravelRepository\Tests\Unit;
 
-use Jooservices\LaravelRepository\Repositories\EloquentRepository;
-use Jooservices\LaravelRepository\Tests\Stubs\UserStub;
-use Jooservices\LaravelRepository\Tests\TestCase;
+use JOOservices\LaravelRepository\Repositories\EloquentRepository;
+use JOOservices\LaravelRepository\Tests\Stubs\UserStub;
+use JOOservices\LaravelRepository\Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 
 class EloquentRepositoryTest extends TestCase

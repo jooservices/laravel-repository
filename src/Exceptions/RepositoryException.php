@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Jooservices\LaravelRepository\Exceptions;
+namespace JOOservices\LaravelRepository\Exceptions;
 
 use Exception;
 use Throwable;

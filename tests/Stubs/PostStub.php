@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Jooservices\LaravelRepository\Tests\Stubs;
+namespace JOOservices\LaravelRepository\Tests\Stubs;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

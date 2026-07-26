@@ -33,18 +33,18 @@
     },
     "autoload": {
         "psr-4": {
-            "Jooservices\\LaravelRepository\\": "src/"
+            "JOOservices\\LaravelRepository\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Jooservices\\LaravelRepository\\Tests\\": "tests/"
+            "JOOservices\\LaravelRepository\\Tests\\": "tests/"
         }
     },
     "extra": {
         "laravel": {
             "providers": [
-                "Jooservices\\LaravelRepository\\LaravelRepositoryServiceProvider"
+                "JOOservices\\LaravelRepository\\LaravelRepositoryServiceProvider"
             ]
         }
     },

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Jooservices\LaravelRepository\Contracts;
+namespace JOOservices\LaravelRepository\Contracts;
 
-use Jooservices\LaravelRepository\Support\Order;
+use JOOservices\LaravelRepository\Support\Order;
 
 interface OrderableRepositoryInterface
 {

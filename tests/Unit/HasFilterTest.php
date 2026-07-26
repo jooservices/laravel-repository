@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Jooservices\LaravelRepository\Tests\Unit;
+namespace JOOservices\LaravelRepository\Tests\Unit;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Jooservices\LaravelRepository\Support\Filter;
-use Jooservices\LaravelRepository\Tests\Stubs\UserRepositoryStub;
-use Jooservices\LaravelRepository\Tests\Stubs\UserStub;
-use Jooservices\LaravelRepository\Tests\TestCase;
+use JOOservices\LaravelRepository\Support\Filter;
+use JOOservices\LaravelRepository\Tests\Stubs\UserRepositoryStub;
+use JOOservices\LaravelRepository\Tests\Stubs\UserStub;
+use JOOservices\LaravelRepository\Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 
 class HasFilterTest extends TestCase

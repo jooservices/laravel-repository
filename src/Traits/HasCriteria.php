@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Jooservices\LaravelRepository\Traits;
+namespace JOOservices\LaravelRepository\Traits;
 
 use Illuminate\Database\Eloquent\Builder;
-use Jooservices\LaravelRepository\Contracts\CriteriaInterface;
+use JOOservices\LaravelRepository\Contracts\CriteriaInterface;
 
 /**
- * @phpstan-require-extends \Jooservices\LaravelRepository\Repositories\EloquentRepository
+ * @phpstan-require-extends \JOOservices\LaravelRepository\Repositories\EloquentRepository
  */
 trait HasCriteria
 {

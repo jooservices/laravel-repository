@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Jooservices\LaravelRepository\Tests\Unit;
+namespace JOOservices\LaravelRepository\Tests\Unit;
 
 use Illuminate\Http\Request;
-use Jooservices\LaravelRepository\Contracts\AllowsRequestQueryInterface;
-use Jooservices\LaravelRepository\Repositories\EloquentRepository;
-use Jooservices\LaravelRepository\Tests\Stubs\AllowedUserRepositoryStub;
-use Jooservices\LaravelRepository\Tests\Stubs\UserRepositoryStub;
-use Jooservices\LaravelRepository\Tests\Stubs\UserStub;
-use Jooservices\LaravelRepository\Tests\TestCase;
-use Jooservices\LaravelRepository\Traits\HasAllowedRequestQuery;
-use Jooservices\LaravelRepository\Traits\HasRequestQuery;
+use JOOservices\LaravelRepository\Contracts\AllowsRequestQueryInterface;
+use JOOservices\LaravelRepository\Repositories\EloquentRepository;
+use JOOservices\LaravelRepository\Tests\Stubs\AllowedUserRepositoryStub;
+use JOOservices\LaravelRepository\Tests\Stubs\UserRepositoryStub;
+use JOOservices\LaravelRepository\Tests\Stubs\UserStub;
+use JOOservices\LaravelRepository\Tests\TestCase;
+use JOOservices\LaravelRepository\Traits\HasAllowedRequestQuery;
+use JOOservices\LaravelRepository\Traits\HasRequestQuery;
 use PHPUnit\Framework\Attributes\Test;
 use ReflectionMethod;
 use stdClass;

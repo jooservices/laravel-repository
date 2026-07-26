@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Jooservices\LaravelRepository\Traits;
+namespace JOOservices\LaravelRepository\Traits;
 
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
-use Jooservices\LaravelRepository\Contracts\FilterInterface;
+use JOOservices\LaravelRepository\Contracts\FilterInterface;
 
 trait HasFilter
 {

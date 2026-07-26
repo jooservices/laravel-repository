@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Jooservices\LaravelRepository\Tests\Stubs;
+namespace JOOservices\LaravelRepository\Tests\Stubs;
 
 use Illuminate\Database\Eloquent\Builder;
-use Jooservices\LaravelRepository\Contracts\RequestFilterInterface;
-use Jooservices\LaravelRepository\Support\QueryOperator;
+use JOOservices\LaravelRepository\Contracts\RequestFilterInterface;
+use JOOservices\LaravelRepository\Support\QueryOperator;
 
 class SearchUsersRequestFilterStub implements RequestFilterInterface
 {

@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Jooservices\LaravelRepository\Tests\Unit;
+namespace JOOservices\LaravelRepository\Tests\Unit;
 
 use Illuminate\Database\Eloquent\Builder;
-use Jooservices\LaravelRepository\Tests\Stubs\AllowedUserRepositoryStub;
-use Jooservices\LaravelRepository\Tests\Stubs\SearchUsersRequestFilterStub;
-use Jooservices\LaravelRepository\Tests\Stubs\UserStub;
-use Jooservices\LaravelRepository\Tests\TestCase;
+use JOOservices\LaravelRepository\Tests\Stubs\AllowedUserRepositoryStub;
+use JOOservices\LaravelRepository\Tests\Stubs\SearchUsersRequestFilterStub;
+use JOOservices\LaravelRepository\Tests\Stubs\UserStub;
+use JOOservices\LaravelRepository\Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 
 class RequestQueryMetadataAndFiltersTest extends TestCase

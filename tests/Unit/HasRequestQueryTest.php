@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Jooservices\LaravelRepository\Tests\Unit;
+namespace JOOservices\LaravelRepository\Tests\Unit;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
-use Jooservices\LaravelRepository\Exceptions\InvalidRequestQueryException;
-use Jooservices\LaravelRepository\Tests\Stubs\AllowedUserRepositoryStub;
-use Jooservices\LaravelRepository\Tests\Stubs\PostStub;
-use Jooservices\LaravelRepository\Tests\Stubs\SearchUsersRequestFilterStub;
-use Jooservices\LaravelRepository\Tests\Stubs\UserRepositoryStub;
-use Jooservices\LaravelRepository\Tests\Stubs\UserStub;
-use Jooservices\LaravelRepository\Tests\TestCase;
+use JOOservices\LaravelRepository\Exceptions\InvalidRequestQueryException;
+use JOOservices\LaravelRepository\Tests\Stubs\AllowedUserRepositoryStub;
+use JOOservices\LaravelRepository\Tests\Stubs\PostStub;
+use JOOservices\LaravelRepository\Tests\Stubs\SearchUsersRequestFilterStub;
+use JOOservices\LaravelRepository\Tests\Stubs\UserRepositoryStub;
+use JOOservices\LaravelRepository\Tests\Stubs\UserStub;
+use JOOservices\LaravelRepository\Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 
 class HasRequestQueryTest extends TestCase

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Jooservices\LaravelRepository\Contracts;
+namespace JOOservices\LaravelRepository\Contracts;
 
 use Closure;
 use DateInterval;
