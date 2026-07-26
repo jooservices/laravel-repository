@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Jooservices\LaravelRepository\Support;
+namespace JOOservices\LaravelRepository\Support;
 
 use Illuminate\Database\Eloquent\Builder;
-use Jooservices\LaravelRepository\Exceptions\InvalidRequestQueryException;
+use JOOservices\LaravelRepository\Exceptions\InvalidRequestQueryException;
 
 class QueryOperator
 {

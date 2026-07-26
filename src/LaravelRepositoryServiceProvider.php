@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Jooservices\LaravelRepository;
+namespace JOOservices\LaravelRepository;
 
 use Illuminate\Support\ServiceProvider;
 

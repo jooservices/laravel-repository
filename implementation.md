@@ -139,7 +139,7 @@ protected function newRepositoryQuery(): Builder
 - Large exception-tree redesign
 - #48 PHPUnit 13 / PHPCS 4
 - CI action SHA-pinning / Gitleaks checksum (track as follow-up security PR)
-- Namespace rename `Jooservices` → `JOOservices`
+- Namespace rename `Jooservices` → `JOOservices` (completed in 1.6.0)
 - Automatic cache invalidation or query caching beyond `HasCache`
 
 ---

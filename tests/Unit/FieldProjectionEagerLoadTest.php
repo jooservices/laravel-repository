@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Jooservices\LaravelRepository\Tests\Unit;
+namespace JOOservices\LaravelRepository\Tests\Unit;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
-use Jooservices\LaravelRepository\Tests\Stubs\CommentRepositoryStub;
-use Jooservices\LaravelRepository\Tests\Stubs\CommentStub;
-use Jooservices\LaravelRepository\Tests\Stubs\PostRepositoryStub;
-use Jooservices\LaravelRepository\Tests\Stubs\PostStub;
-use Jooservices\LaravelRepository\Tests\Stubs\UserStub;
-use Jooservices\LaravelRepository\Tests\TestCase;
+use JOOservices\LaravelRepository\Tests\Stubs\CommentRepositoryStub;
+use JOOservices\LaravelRepository\Tests\Stubs\CommentStub;
+use JOOservices\LaravelRepository\Tests\Stubs\PostRepositoryStub;
+use JOOservices\LaravelRepository\Tests\Stubs\PostStub;
+use JOOservices\LaravelRepository\Tests\Stubs\UserStub;
+use JOOservices\LaravelRepository\Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 
 class FieldProjectionEagerLoadTest extends TestCase

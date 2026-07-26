@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Jooservices\LaravelRepository\Tests\Stubs;
+namespace JOOservices\LaravelRepository\Tests\Stubs;
 
 use Illuminate\Database\Eloquent\Builder;
-use Jooservices\LaravelRepository\Contracts\CriteriaInterface;
+use JOOservices\LaravelRepository\Contracts\CriteriaInterface;
 
 class ActiveStatusCriteriaStub implements CriteriaInterface
 {

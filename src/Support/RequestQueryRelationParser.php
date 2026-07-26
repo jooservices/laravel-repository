@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Jooservices\LaravelRepository\Support;
+namespace JOOservices\LaravelRepository\Support;
 
 /**
  * @phpstan-import-type WhereClause from RequestQueryParser

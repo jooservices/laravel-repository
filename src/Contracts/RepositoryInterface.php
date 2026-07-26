@@ -2,6 +2,6 @@
 
 declare(strict_types=1);
 
-namespace Jooservices\LaravelRepository\Contracts;
+namespace JOOservices\LaravelRepository\Contracts;
 
 interface RepositoryInterface extends CrudRepositoryInterface, FilterableRepositoryInterface, OrderableRepositoryInterface, ReadableRepositoryInterface, RequestQueryRepositoryInterface {}

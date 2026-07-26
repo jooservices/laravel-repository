@@ -8,11 +8,14 @@
 - Strict request-query mode requires explicit allowlists for request-controlled names.
 - `HasCache` is a low-level opt-in wrapper and does not automatically cache queries or invalidate CRUD writes.
 
-## Namespace mismatch
+## Namespace
 
-Current public code and examples use the namespace `Jooservices\LaravelRepository`.
+Current public code and examples use the namespace `JOOservices\LaravelRepository`
+(uppercase `OO`). Do not introduce `Jooservices\` or `JooServices\` aliases.
+Composer package name remains `jooservices/laravel-repository`.
 
-The broader JOOservices ecosystem style prefers `JOOservices\*`. Renaming this package namespace would break existing consumers and should be considered only for a future major release with a migration plan and compatibility notes.
+Consumers that still import `Jooservices\LaravelRepository\…` must update to
+`JOOservices\LaravelRepository\…` when upgrading to `1.6.0` or later.
 
 ## Governance rollout risks
 

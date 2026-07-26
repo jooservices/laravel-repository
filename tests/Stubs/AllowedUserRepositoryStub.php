@@ -2,32 +2,32 @@
 
 declare(strict_types=1);
 
-namespace Jooservices\LaravelRepository\Tests\Stubs;
+namespace JOOservices\LaravelRepository\Tests\Stubs;
 
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
-use Jooservices\LaravelRepository\Contracts\AllowsRequestQueryInterface as ARQ;
-use Jooservices\LaravelRepository\Contracts\CacheableRepositoryInterface as CRI;
-use Jooservices\LaravelRepository\Contracts\CriteriaRepositoryInterface as CR;
-use Jooservices\LaravelRepository\Contracts\CursorPaginateableRepositoryInterface as CPR;
-use Jooservices\LaravelRepository\Contracts\IteratesRepositoryInterface as IR;
-use Jooservices\LaravelRepository\Contracts\ProvidesRequestFiltersInterface as PRF;
-use Jooservices\LaravelRepository\Contracts\ProvidesRequestQueryMetadataInterface as PRQM;
-use Jooservices\LaravelRepository\Contracts\RepositoryInterface as RR;
-use Jooservices\LaravelRepository\Contracts\RequestFilterInterface as RF;
-use Jooservices\LaravelRepository\Repositories\EloquentRepository;
-use Jooservices\LaravelRepository\Traits\HasAllowedRequestQuery;
-use Jooservices\LaravelRepository\Traits\HasCache;
-use Jooservices\LaravelRepository\Traits\HasCriteria;
-use Jooservices\LaravelRepository\Traits\HasCrud;
-use Jooservices\LaravelRepository\Traits\HasCursorPagination;
-use Jooservices\LaravelRepository\Traits\HasFilter;
-use Jooservices\LaravelRepository\Traits\HasIteration;
-use Jooservices\LaravelRepository\Traits\HasOrder;
-use Jooservices\LaravelRepository\Traits\HasRead;
-use Jooservices\LaravelRepository\Traits\HasRequestFilters;
-use Jooservices\LaravelRepository\Traits\HasRequestQuery;
-use Jooservices\LaravelRepository\Traits\HasRequestQueryMetadata;
+use JOOservices\LaravelRepository\Contracts\AllowsRequestQueryInterface as ARQ;
+use JOOservices\LaravelRepository\Contracts\CacheableRepositoryInterface as CRI;
+use JOOservices\LaravelRepository\Contracts\CriteriaRepositoryInterface as CR;
+use JOOservices\LaravelRepository\Contracts\CursorPaginateableRepositoryInterface as CPR;
+use JOOservices\LaravelRepository\Contracts\IteratesRepositoryInterface as IR;
+use JOOservices\LaravelRepository\Contracts\ProvidesRequestFiltersInterface as PRF;
+use JOOservices\LaravelRepository\Contracts\ProvidesRequestQueryMetadataInterface as PRQM;
+use JOOservices\LaravelRepository\Contracts\RepositoryInterface as RR;
+use JOOservices\LaravelRepository\Contracts\RequestFilterInterface as RF;
+use JOOservices\LaravelRepository\Repositories\EloquentRepository;
+use JOOservices\LaravelRepository\Traits\HasAllowedRequestQuery;
+use JOOservices\LaravelRepository\Traits\HasCache;
+use JOOservices\LaravelRepository\Traits\HasCriteria;
+use JOOservices\LaravelRepository\Traits\HasCrud;
+use JOOservices\LaravelRepository\Traits\HasCursorPagination;
+use JOOservices\LaravelRepository\Traits\HasFilter;
+use JOOservices\LaravelRepository\Traits\HasIteration;
+use JOOservices\LaravelRepository\Traits\HasOrder;
+use JOOservices\LaravelRepository\Traits\HasRead;
+use JOOservices\LaravelRepository\Traits\HasRequestFilters;
+use JOOservices\LaravelRepository\Traits\HasRequestQuery;
+use JOOservices\LaravelRepository\Traits\HasRequestQueryMetadata;
 
 class AllowedUserRepositoryStub extends EloquentRepository implements ARQ, CPR, CR, CRI, IR, PRF, PRQM, RR
 {

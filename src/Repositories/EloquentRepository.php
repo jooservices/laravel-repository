@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Jooservices\LaravelRepository\Repositories;
+namespace JOOservices\LaravelRepository\Repositories;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Jooservices\LaravelRepository\Contracts\CriteriaRepositoryInterface;
+use JOOservices\LaravelRepository\Contracts\CriteriaRepositoryInterface;
 
 class EloquentRepository
 {

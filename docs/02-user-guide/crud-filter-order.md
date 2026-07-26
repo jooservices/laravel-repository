@@ -25,8 +25,8 @@ Repositories that use `HasIteration` can process records with `chunk()`, `lazy()
 ## Example
 
 ```php
-use Jooservices\LaravelRepository\Support\Filter;
-use Jooservices\LaravelRepository\Support\Order;
+use JOOservices\LaravelRepository\Support\Filter;
+use JOOservices\LaravelRepository\Support\Order;
 
 $users = $repository
     ->filter([

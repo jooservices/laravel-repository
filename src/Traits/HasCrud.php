@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Jooservices\LaravelRepository\Traits;
+namespace JOOservices\LaravelRepository\Traits;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 
 /**
- * @phpstan-require-extends \Jooservices\LaravelRepository\Repositories\EloquentRepository
+ * @phpstan-require-extends \JOOservices\LaravelRepository\Repositories\EloquentRepository
  */
 trait HasCrud
 {
