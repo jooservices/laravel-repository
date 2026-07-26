@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.6.0] - 2026-07-26
+## [1.7.0] - 2026-07-26
 
 ### Changed
 
@@ -120,7 +120,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Laravel ^12.0
 - illuminate/contracts, illuminate/database, illuminate/support, illuminate/http ^12.0
 
-[1.6.0]: https://github.com/jooservices/laravel-repository/releases/tag/v1.6.0
+[1.7.0]: https://github.com/jooservices/laravel-repository/releases/tag/v1.7.0
 [1.5.0]: https://github.com/jooservices/laravel-repository/releases/tag/v1.5.0
 [1.4.0]: https://github.com/jooservices/laravel-repository/releases/tag/v1.4.0
 [1.3.0]: https://github.com/jooservices/laravel-repository/releases/tag/v1.3.0

@@ -15,7 +15,7 @@ Current public code and examples use the namespace `JOOservices\LaravelRepositor
 Composer package name remains `jooservices/laravel-repository`.
 
 Consumers must import `JOOservices\LaravelRepository\…` when upgrading to
-`1.6.0` or later.
+`1.7.0` or later.
 
 ## Governance rollout risks
 
