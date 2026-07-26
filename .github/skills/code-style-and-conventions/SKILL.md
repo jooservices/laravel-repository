@@ -19,7 +19,7 @@ description: "Use when editing PHP, docs, or repository config. Captures the rep
 - Keep `declare(strict_types=1);` in PHP files.
 - Prefer explicit types and precise PHPDoc only where native types are insufficient.
 - Preserve existing namespaces under `JOOservices\\LaravelRepository\\`
-  (uppercase `OO` only; never `Jooservices\\` or `JooServices\\`).
+  (uppercase `OO` only; do not use alternate namespace casing).
 - Keep comments sparse and only for non-obvious behavior.
 
 ## Repository docs style
