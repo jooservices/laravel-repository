@@ -65,11 +65,11 @@ For the authoritative request-query surface, examples, and guard rails, use [02-
 namespace App\Repositories;
 
 use App\Models\User;
-use Jooservices\LaravelRepository\Contracts\RepositoryInterface;
-use Jooservices\LaravelRepository\Repositories\EloquentRepository;
-use Jooservices\LaravelRepository\Traits\HasCrud;
-use Jooservices\LaravelRepository\Traits\HasFilter;
-use Jooservices\LaravelRepository\Traits\HasOrder;
+use JOOservices\LaravelRepository\Contracts\RepositoryInterface;
+use JOOservices\LaravelRepository\Repositories\EloquentRepository;
+use JOOservices\LaravelRepository\Traits\HasCrud;
+use JOOservices\LaravelRepository\Traits\HasFilter;
+use JOOservices\LaravelRepository\Traits\HasOrder;
 
 class UserRepository extends EloquentRepository implements RepositoryInterface
 {
@@ -87,7 +87,7 @@ class UserRepository extends EloquentRepository implements RepositoryInterface
 ### Example: full stack (including fromRequest)
 
 ```php
-use Jooservices\LaravelRepository\Traits\HasRequestQuery;
+use JOOservices\LaravelRepository\Traits\HasRequestQuery;
 
 class UserRepository extends EloquentRepository implements RepositoryInterface
 {
@@ -157,8 +157,8 @@ $users = $this->userRepository
 For custom operators (e.g. `like`):
 
 ```php
-use Jooservices\LaravelRepository\Support\Filter;
-use Jooservices\LaravelRepository\Support\Order;
+use JOOservices\LaravelRepository\Support\Filter;
+use JOOservices\LaravelRepository\Support\Order;
 
 $users = $this->userRepository
     ->filter([
@@ -219,7 +219,7 @@ Implement `FilterInterface` for reusable custom logic:
 
 ```php
 use Illuminate\Database\Eloquent\Builder;
-use Jooservices\LaravelRepository\Contracts\FilterInterface;
+use JOOservices\LaravelRepository\Contracts\FilterInterface;
 
 class StatusFilter implements FilterInterface
 {

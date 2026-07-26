@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Jooservices\LaravelRepository\Tests\Unit;
+namespace JOOservices\LaravelRepository\Tests\Unit;
 
-use Jooservices\LaravelRepository\Support\RequestQueryValueNormalizer;
-use Jooservices\LaravelRepository\Tests\TestCase;
+use JOOservices\LaravelRepository\Support\RequestQueryValueNormalizer;
+use JOOservices\LaravelRepository\Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 
 class RequestQueryValueNormalizerTest extends TestCase

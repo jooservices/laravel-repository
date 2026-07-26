@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Jooservices\LaravelRepository\Tests\Unit;
+namespace JOOservices\LaravelRepository\Tests\Unit;
 
-use Jooservices\LaravelRepository\Exceptions\InvalidRequestQueryException;
-use Jooservices\LaravelRepository\Exceptions\RepositoryException;
-use Jooservices\LaravelRepository\Tests\TestCase;
+use JOOservices\LaravelRepository\Exceptions\InvalidRequestQueryException;
+use JOOservices\LaravelRepository\Exceptions\RepositoryException;
+use JOOservices\LaravelRepository\Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 
 class RepositoryExceptionTest extends TestCase

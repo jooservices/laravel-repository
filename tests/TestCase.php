@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Jooservices\LaravelRepository\Tests;
+namespace JOOservices\LaravelRepository\Tests;
 
-use Jooservices\LaravelRepository\LaravelRepositoryServiceProvider;
+use JOOservices\LaravelRepository\LaravelRepositoryServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
 
 class TestCase extends Orchestra

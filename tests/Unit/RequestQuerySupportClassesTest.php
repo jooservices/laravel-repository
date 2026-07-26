@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Jooservices\LaravelRepository\Tests\Unit;
+namespace JOOservices\LaravelRepository\Tests\Unit;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Jooservices\LaravelRepository\Support\QueryOperator;
-use Jooservices\LaravelRepository\Support\RequestQueryHasParser;
-use Jooservices\LaravelRepository\Support\RequestQueryProjectionParser;
-use Jooservices\LaravelRepository\Support\RequestQueryRelationParser;
-use Jooservices\LaravelRepository\Support\RequestQueryScopeParser;
-use Jooservices\LaravelRepository\Tests\Stubs\UserStub;
-use Jooservices\LaravelRepository\Tests\TestCase;
+use JOOservices\LaravelRepository\Support\QueryOperator;
+use JOOservices\LaravelRepository\Support\RequestQueryHasParser;
+use JOOservices\LaravelRepository\Support\RequestQueryProjectionParser;
+use JOOservices\LaravelRepository\Support\RequestQueryRelationParser;
+use JOOservices\LaravelRepository\Support\RequestQueryScopeParser;
+use JOOservices\LaravelRepository\Tests\Stubs\UserStub;
+use JOOservices\LaravelRepository\Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 
 class RequestQuerySupportClassesTest extends TestCase

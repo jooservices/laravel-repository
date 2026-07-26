@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Jooservices\LaravelRepository\Traits;
+namespace JOOservices\LaravelRepository\Traits;
 
 use Closure;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -13,15 +13,15 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use Jooservices\LaravelRepository\Contracts\AllowsRequestQueryInterface;
-use Jooservices\LaravelRepository\Contracts\ProvidesRequestFiltersInterface;
-use Jooservices\LaravelRepository\Contracts\ProvidesRequestQueryMetadataInterface;
-use Jooservices\LaravelRepository\Contracts\RequestFilterInterface;
-use Jooservices\LaravelRepository\Exceptions\InvalidRequestQueryException;
-use Jooservices\LaravelRepository\Support\QueryOperator;
-use Jooservices\LaravelRepository\Support\RequestQueryInput;
-use Jooservices\LaravelRepository\Support\RequestQueryParser;
-use Jooservices\LaravelRepository\Support\RequestQueryValueNormalizer;
+use JOOservices\LaravelRepository\Contracts\AllowsRequestQueryInterface;
+use JOOservices\LaravelRepository\Contracts\ProvidesRequestFiltersInterface;
+use JOOservices\LaravelRepository\Contracts\ProvidesRequestQueryMetadataInterface;
+use JOOservices\LaravelRepository\Contracts\RequestFilterInterface;
+use JOOservices\LaravelRepository\Exceptions\InvalidRequestQueryException;
+use JOOservices\LaravelRepository\Support\QueryOperator;
+use JOOservices\LaravelRepository\Support\RequestQueryInput;
+use JOOservices\LaravelRepository\Support\RequestQueryParser;
+use JOOservices\LaravelRepository\Support\RequestQueryValueNormalizer;
 use LogicException;
 use Throwable;
 

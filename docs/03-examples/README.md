@@ -6,12 +6,12 @@ These examples show opt-in repository compositions for common package use cases.
 
 ```php
 use App\Models\User;
-use Jooservices\LaravelRepository\Contracts\RepositoryInterface;
-use Jooservices\LaravelRepository\Repositories\EloquentRepository;
-use Jooservices\LaravelRepository\Traits\HasCrud;
-use Jooservices\LaravelRepository\Traits\HasFilter;
-use Jooservices\LaravelRepository\Traits\HasOrder;
-use Jooservices\LaravelRepository\Traits\HasRead;
+use JOOservices\LaravelRepository\Contracts\RepositoryInterface;
+use JOOservices\LaravelRepository\Repositories\EloquentRepository;
+use JOOservices\LaravelRepository\Traits\HasCrud;
+use JOOservices\LaravelRepository\Traits\HasFilter;
+use JOOservices\LaravelRepository\Traits\HasOrder;
+use JOOservices\LaravelRepository\Traits\HasRead;
 
 final class UserRepository extends EloquentRepository implements RepositoryInterface
 {
@@ -30,9 +30,9 @@ final class UserRepository extends EloquentRepository implements RepositoryInter
 ## Allowed Request Query
 
 ```php
-use Jooservices\LaravelRepository\Contracts\AllowsRequestQueryInterface;
-use Jooservices\LaravelRepository\Traits\HasAllowedRequestQuery;
-use Jooservices\LaravelRepository\Traits\HasRequestQuery;
+use JOOservices\LaravelRepository\Contracts\AllowsRequestQueryInterface;
+use JOOservices\LaravelRepository\Traits\HasAllowedRequestQuery;
+use JOOservices\LaravelRepository\Traits\HasRequestQuery;
 
 final class UserRepository extends EloquentRepository implements AllowsRequestQueryInterface, RepositoryInterface
 {

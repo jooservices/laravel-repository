@@ -61,18 +61,18 @@ Use allowlists when the repository is exposed through HTTP APIs and you want a c
 ```php
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
-use Jooservices\LaravelRepository\Contracts\AllowsRequestQueryInterface;
-use Jooservices\LaravelRepository\Contracts\ProvidesRequestFiltersInterface;
-use Jooservices\LaravelRepository\Contracts\ProvidesRequestQueryMetadataInterface;
-use Jooservices\LaravelRepository\Contracts\RepositoryInterface;
-use Jooservices\LaravelRepository\Repositories\EloquentRepository;
-use Jooservices\LaravelRepository\Traits\HasAllowedRequestQuery;
-use Jooservices\LaravelRepository\Traits\HasCrud;
-use Jooservices\LaravelRepository\Traits\HasFilter;
-use Jooservices\LaravelRepository\Traits\HasOrder;
-use Jooservices\LaravelRepository\Traits\HasRequestFilters;
-use Jooservices\LaravelRepository\Traits\HasRequestQueryMetadata;
-use Jooservices\LaravelRepository\Traits\HasRequestQuery;
+use JOOservices\LaravelRepository\Contracts\AllowsRequestQueryInterface;
+use JOOservices\LaravelRepository\Contracts\ProvidesRequestFiltersInterface;
+use JOOservices\LaravelRepository\Contracts\ProvidesRequestQueryMetadataInterface;
+use JOOservices\LaravelRepository\Contracts\RepositoryInterface;
+use JOOservices\LaravelRepository\Repositories\EloquentRepository;
+use JOOservices\LaravelRepository\Traits\HasAllowedRequestQuery;
+use JOOservices\LaravelRepository\Traits\HasCrud;
+use JOOservices\LaravelRepository\Traits\HasFilter;
+use JOOservices\LaravelRepository\Traits\HasOrder;
+use JOOservices\LaravelRepository\Traits\HasRequestFilters;
+use JOOservices\LaravelRepository\Traits\HasRequestQueryMetadata;
+use JOOservices\LaravelRepository\Traits\HasRequestQuery;
 
 final class UserRepository extends EloquentRepository implements AllowsRequestQueryInterface, ProvidesRequestFiltersInterface, ProvidesRequestQueryMetadataInterface, RepositoryInterface
 {

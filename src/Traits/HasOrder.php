@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Jooservices\LaravelRepository\Traits;
+namespace JOOservices\LaravelRepository\Traits;
 
-use Jooservices\LaravelRepository\Support\Order;
+use JOOservices\LaravelRepository\Support\Order;
 
 trait HasOrder
 {
