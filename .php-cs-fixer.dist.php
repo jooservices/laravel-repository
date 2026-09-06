@@ -7,15 +7,24 @@ $finder = PhpCsFixer\Finder::create()
         __DIR__.'/src',
         __DIR__.'/tests',
     ])
-    ->exclude([
-        'vendor',
-        'build',
-    ]);
+    ->name('*.php')
+    ->ignoreDotFiles(true)
+    ->ignoreVCS(true);
 
+// Pint is the primary formatter. PHP-CS-Fixer is PHPDoc-only.
 return (new PhpCsFixer\Config())
-    ->setRiskyAllowed(true)
+    ->setRiskyAllowed(false)
     ->setRules([
-        'no_unused_imports' => true,
-        'ordered_imports' => ['sort_algorithm' => 'alpha'],
+        'general_phpdoc_annotation_remove' => [
+            'annotations' => ['author', 'package', 'subpackage'],
+        ],
+        'general_phpdoc_tag_rename' => [
+            'replacements' => ['inheritDocs' => 'inheritDoc'],
+        ],
+        'phpdoc_no_alias_tag' => ['replacements' => ['type' => 'var']],
+        'phpdoc_scalar' => true,
+        'phpdoc_trim' => true,
+        'phpdoc_types' => true,
     ])
-    ->setFinder($finder);
+    ->setFinder($finder)
+    ->setCacheFile(__DIR__.'/.php-cs-fixer.cache');

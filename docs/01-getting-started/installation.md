@@ -9,7 +9,7 @@
 ## Install with Composer
 
 ```bash
-composer require jooservices/laravel-repository
+composer require jooservices/laravel-repository:^4.0
 ```
 
 The package uses Laravel package discovery for the service provider.

@@ -1,0 +1,16 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{ namespace }};
+
+use {{ namespacedModel }};
+use JOOservices\LaravelRepository\Repositories\Presets\ApiRepository;
+
+final class {{ class }} extends ApiRepository
+{
+    public function __construct({{ model }} $model)
+    {
+        parent::__construct($model);
+    }
+}

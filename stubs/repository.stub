@@ -1,0 +1,24 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{ namespace }};
+
+use {{ namespacedModel }};
+use JOOservices\LaravelRepository\Contracts\RepositoryInterface;
+use JOOservices\LaravelRepository\Repositories\EloquentRepository;
+use JOOservices\LaravelRepository\Traits\HasCrud;
+use JOOservices\LaravelRepository\Traits\HasFilter;
+use JOOservices\LaravelRepository\Traits\HasOrder;
+
+final class {{ class }} extends EloquentRepository implements RepositoryInterface
+{
+    use HasCrud;
+    use HasFilter;
+    use HasOrder;
+
+    public function __construct({{ model }} $model)
+    {
+        parent::__construct($model);
+    }
+}

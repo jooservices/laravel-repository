@@ -27,7 +27,7 @@ class HasRequestQueryInternalsTest extends TestCase
     #[Test]
     public function it_returns_default_helper_state_without_optional_interfaces(): void
     {
-        $repo = new UserRepositoryStub(new UserStub);
+        $repo = new UserRepositoryStub(new UserStub());
 
         $this->assertNull($this->invokePrivate($repo, 'requestQueryAllowedFilters'));
         $this->assertNull($this->invokePrivate($repo, 'requestQueryAllowedSorts'));
@@ -79,7 +79,7 @@ class HasRequestQueryInternalsTest extends TestCase
     public function it_exposes_private_helper_resolution_for_allowed_request_query_repositories(): void
     {
         $repo = (new AllowedUserRepositoryStub(
-            new UserStub,
+            new UserStub(),
             ['email'],
             ['name'],
             ['profile', 'posts'],
@@ -189,7 +189,7 @@ class HasRequestQueryInternalsTest extends TestCase
     public function it_returns_false_for_permissive_relation_guards_and_scope_mismatches(): void
     {
         $repo = (new AllowedUserRepositoryStub(
-            new UserStub,
+            new UserStub(),
             null,
             null,
             ['posts'],
@@ -211,7 +211,7 @@ class HasRequestQueryInternalsTest extends TestCase
     #[Test]
     public function it_exercises_apply_helper_skip_and_guard_branches(): void
     {
-        $repo = (new AllowedUserRepositoryStub(new UserStub, ['status'], null, null, false))
+        $repo = (new AllowedUserRepositoryStub(new UserStub(), ['status'], null, null, false))
             ->withAllowedFields(['name']);
 
         $fieldQuery = UserStub::query();
@@ -222,7 +222,7 @@ class HasRequestQueryInternalsTest extends TestCase
         $this->invokePrivate($repo, 'applyNamedFilterClauses', [$namedFilterQuery, ['missing' => 'value']]);
         $this->assertSame([], $namedFilterQuery->getQuery()->wheres ?? []);
 
-        $guard = static fn (string $column): bool => $column === 'status';
+        $guard = static fn(string $column): bool => $column === 'status';
 
         $whereQuery = UserStub::query();
         $this->invokePrivate($repo, 'applyWhereClauses', [
@@ -284,11 +284,11 @@ class HasRequestQueryInternalsTest extends TestCase
     #[Test]
     public function it_covers_remaining_simple_private_helper_branches(): void
     {
-        $strictRepo = new AllowedUserRepositoryStub(new UserStub, null, null, null, true);
+        $strictRepo = new AllowedUserRepositoryStub(new UserStub(), null, null, null, true);
         $this->invokePrivate($strictRepo, 'assertSupportedRequestQuery', [['where' => [], 1 => 'ignored']]);
 
         $repo = new AllowedUserRepositoryStub(
-            new UserStub,
+            new UserStub(),
             ['status'],
             null,
             null,
@@ -310,7 +310,7 @@ class HasRequestQueryInternalsTest extends TestCase
         $this->invokePrivate($repo, 'applyWhereNullClauses', [
             $whereNullQuery,
             ['email'],
-            static fn (): bool => false,
+            static fn(): bool => false,
         ]);
         $this->assertSame([], $whereNullQuery->getQuery()->wheres ?? []);
 
@@ -318,7 +318,7 @@ class HasRequestQueryInternalsTest extends TestCase
         $this->invokePrivate($repo, 'applyWhereNotNullClauses', [
             $whereNotNullQuery,
             ['email'],
-            static fn (): bool => false,
+            static fn(): bool => false,
         ]);
         $this->assertSame([], $whereNotNullQuery->getQuery()->wheres ?? []);
 
@@ -329,7 +329,7 @@ class HasRequestQueryInternalsTest extends TestCase
     public function it_exercises_apply_scope_fallback_paths(): void
     {
         $permissiveScopeRepo = new AllowedUserRepositoryStub(
-            new UserStub,
+            new UserStub(),
             null,
             null,
             null,
@@ -344,7 +344,7 @@ class HasRequestQueryInternalsTest extends TestCase
         $this->assertSame([], $scopeQuery->getQuery()->wheres ?? []);
 
         $strictScopeRepo = new AllowedUserRepositoryStub(
-            new UserStub,
+            new UserStub(),
             null,
             null,
             null,
@@ -370,7 +370,7 @@ class HasRequestQueryInternalsTest extends TestCase
     public function it_exercises_apply_has_fallback_paths(): void
     {
         $permissiveHasRepo = new AllowedUserRepositoryStub(
-            new UserStub,
+            new UserStub(),
             null,
             null,
             ['posts'],
@@ -385,7 +385,7 @@ class HasRequestQueryInternalsTest extends TestCase
         ]);
         $this->assertSame([], $hasSkippedQuery->getQuery()->wheres ?? []);
 
-        $strictHasRepo = new AllowedUserRepositoryStub(new UserStub, null, null, ['ghost'], true);
+        $strictHasRepo = new AllowedUserRepositoryStub(new UserStub(), null, null, ['ghost'], true);
 
         try {
             $this->invokePrivate($strictHasRepo, 'applyHasClauses', [
@@ -400,7 +400,7 @@ class HasRequestQueryInternalsTest extends TestCase
             );
         }
 
-        $permissiveUnknownHasRepo = new AllowedUserRepositoryStub(new UserStub, null, null, ['ghost'], false);
+        $permissiveUnknownHasRepo = new AllowedUserRepositoryStub(new UserStub(), null, null, ['ghost'], false);
         $unknownHasQuery = UserStub::query();
         $this->invokePrivate($permissiveUnknownHasRepo, 'applyHasClauses', [
             $unknownHasQuery,
@@ -413,7 +413,7 @@ class HasRequestQueryInternalsTest extends TestCase
     public function it_exercises_apply_relation_clause_fallback_paths(): void
     {
         $permissiveRelationRepo = new AllowedUserRepositoryStub(
-            new UserStub,
+            new UserStub(),
             null,
             null,
             null,
@@ -438,7 +438,7 @@ class HasRequestQueryInternalsTest extends TestCase
         $this->assertSame([], $relationSkippedQuery->getQuery()->wheres ?? []);
 
         $strictRelationRepo = new AllowedUserRepositoryStub(
-            new UserStub,
+            new UserStub(),
             null,
             null,
             null,
@@ -470,7 +470,7 @@ class HasRequestQueryInternalsTest extends TestCase
         }
 
         $permissiveUnknownRelationRepo = new AllowedUserRepositoryStub(
-            new UserStub,
+            new UserStub(),
             null,
             null,
             null,
@@ -520,8 +520,8 @@ class HasRequestQueryInternalsTest extends TestCase
     #[Test]
     public function it_handles_private_request_query_data_modes(): void
     {
-        $permissiveRepo = new AllowedUserRepositoryStub(new UserStub);
-        $strictRepo = new AllowedUserRepositoryStub(new UserStub, null, null, null, true);
+        $permissiveRepo = new AllowedUserRepositoryStub(new UserStub());
+        $strictRepo = new AllowedUserRepositoryStub(new UserStub(), null, null, null, true);
 
         $this->assertSame([], $this->invokePrivate(
             $permissiveRepo,
@@ -536,8 +536,8 @@ class HasRequestQueryInternalsTest extends TestCase
     #[Test]
     public function it_validates_supported_request_query_clauses(): void
     {
-        $strictRepo = new AllowedUserRepositoryStub(new UserStub, null, null, null, true);
-        $permissiveRepo = new AllowedUserRepositoryStub(new UserStub);
+        $strictRepo = new AllowedUserRepositoryStub(new UserStub(), null, null, null, true);
+        $permissiveRepo = new AllowedUserRepositoryStub(new UserStub());
 
         $this->invokePrivate($permissiveRepo, 'assertSupportedRequestQuery', [['aggregate' => 'anything']]);
         $this->assertTrue(true);
@@ -547,9 +547,9 @@ class HasRequestQueryInternalsTest extends TestCase
             $this->fail('Expected unsupported clause exception.');
         } catch (Throwable $exception) {
             $message = 'Request query clause [aggregate] is not supported. '
-                .'Supported clauses: where, orWhere, whereIn, whereBetween, whereNull, whereNotNull, '
-                .'fields, filters, scope, has, whereHas, orWhereHas, whereDoesntHave, '
-                .'orWhereDoesntHave, with, order.';
+                . 'Supported clauses: where, orWhere, whereIn, whereBetween, whereNull, whereNotNull, '
+                . 'fields, filters, scope, has, whereHas, orWhereHas, whereDoesntHave, '
+                . 'orWhereDoesntHave, with, order.';
 
             $this->assertSame(
                 $message,
@@ -564,7 +564,7 @@ class HasRequestQueryInternalsTest extends TestCase
     #[Test]
     public function it_handles_private_alias_scope_and_relation_helpers(): void
     {
-        $repo = (new AllowedUserRepositoryStub(new UserStub, ['status'], null, null, false, ['email_domain']))
+        $repo = (new AllowedUserRepositoryStub(new UserStub(), ['status'], null, null, false, ['email_domain']))
             ->withAllowedFields(['name'])
             ->withFilterAliases(['contact' => 'email', 'email' => 'email'])
             ->withRelationAliases(['articles' => 'posts'])
@@ -573,7 +573,7 @@ class HasRequestQueryInternalsTest extends TestCase
                 'ignored' => ['scope' => 'active', 'parameters' => 0],
             ]);
 
-        $plainRepo = new UserRepositoryStub(new UserStub);
+        $plainRepo = new UserRepositoryStub(new UserStub());
 
         $this->assertNull($this->invokePrivate($plainRepo, 'requestQueryAllowedFields'));
         $this->assertSame(['name'], $this->invokePrivate($repo, 'requestQueryAllowedFields'));
@@ -594,7 +594,7 @@ class HasRequestQueryInternalsTest extends TestCase
         $this->assertTrue($this->invokePrivate($repo, 'relationExists', ['posts.user']));
         $this->assertFalse($this->invokePrivate($repo, 'relationExists', ['posts.missing']));
 
-        $nonRelationRepo = new NonRelationRequestQueryRepositoryStub(new NonRelationUserStub);
+        $nonRelationRepo = new NonRelationRequestQueryRepositoryStub(new NonRelationUserStub());
 
         $this->assertFalse($this->invokePrivate($nonRelationRepo, 'relationExists', ['bogus']));
     }
@@ -602,10 +602,10 @@ class HasRequestQueryInternalsTest extends TestCase
     #[Test]
     public function it_handles_private_request_filter_resolution_modes(): void
     {
-        $strictRepoWithoutFilters = new StrictRequestQueryRepositoryStub(new UserStub);
+        $strictRepoWithoutFilters = new StrictRequestQueryRepositoryStub(new UserStub());
 
         $this->assertNull(
-            $this->invokePrivate(new UserRepositoryStub(new UserStub), 'resolveRequestFilter', ['search']),
+            $this->invokePrivate(new UserRepositoryStub(new UserStub()), 'resolveRequestFilter', ['search']),
         );
 
         $this->expectExceptionMessage('Request filter [search] is not allowed. Allowed request filters: [none].');
@@ -641,6 +641,6 @@ class NonRelationUserStub extends UserStub
 {
     public function bogus(): object
     {
-        return new stdClass;
+        return new stdClass();
     }
 }

@@ -159,6 +159,7 @@ final class UserRepository extends EloquentRepository implements AllowsRequestQu
 - disallowed filters, sorts, includes, fields, scopes, relation filters, relation count clauses, or named request filters throw `InvalidRequestQueryException` in strict mode
 - strict mode requires request-controlled names to be present in the matching allowlist
 - unsupported clause families, invalid array-only clause shapes, and unknown eager-load relations also throw `InvalidRequestQueryException` in strict mode
+- relation methods should declare a native `Relation` (or subclass) return type; untyped methods are ignored unless the path is explicitly allowlisted (`allowedIncludes` / relation-filter keys) or listed in `$trustedRelations`; trusting a path does **not** authorize untyped descendant segments
 - scope definitions can alias public request names to model scopes and enforce exact parameter counts
 - relation aliases can be reused across eager-loading includes, relation count clauses, and relation filters
 - aggregate include helpers stay opt-in and are exposed through explicit request-query metadata

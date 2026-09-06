@@ -6,8 +6,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
@@ -15,6 +14,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('email');
             $table->string('status')->default('active');
+            $table->integer('score')->default(0);
             $table->timestamps();
         });
     }

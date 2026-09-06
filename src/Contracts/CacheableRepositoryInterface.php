@@ -13,7 +13,7 @@ interface CacheableRepositoryInterface
     /**
      * @param  Closure(static): mixed  $resolver
      */
-    public function remember(string $key, DateTimeInterface|DateInterval|int|null $ttl, Closure $resolver): mixed;
+    public function remember(string $key, DateTimeInterface | DateInterval | int | null $ttl, Closure $resolver): mixed;
 
     /**
      * @param  Closure(static): mixed  $resolver

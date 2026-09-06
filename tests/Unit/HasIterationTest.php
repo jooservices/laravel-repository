@@ -22,7 +22,7 @@ class HasIterationTest extends TestCase
     #[Test]
     public function it_chunks_filtered_results_and_resets_the_query(): void
     {
-        $repo = new AllowedUserRepositoryStub(new UserStub);
+        $repo = new AllowedUserRepositoryStub(new UserStub());
         $repo->create(['name' => 'A', 'email' => self::FIRST_EMAIL, 'status' => 'active']);
         $repo->create(['name' => 'B', 'email' => self::SECOND_EMAIL, 'status' => 'pending']);
 
@@ -41,12 +41,12 @@ class HasIterationTest extends TestCase
     #[Test]
     public function it_returns_a_lazy_collection_and_resets_the_query(): void
     {
-        $repo = new AllowedUserRepositoryStub(new UserStub);
+        $repo = new AllowedUserRepositoryStub(new UserStub());
         $repo->create(['name' => 'A', 'email' => self::FIRST_EMAIL, 'status' => 'active']);
         $repo->create(['name' => 'B', 'email' => self::SECOND_EMAIL, 'status' => 'pending']);
 
         $names = $repo->filter(['status' => 'active'])->lazy(1)->map(
-            static fn (UserStub $user): string => $user->name,
+            static fn(UserStub $user): string => $user->name,
         )->values()->all();
 
         $this->assertSame(['A'], $names);
@@ -56,12 +56,12 @@ class HasIterationTest extends TestCase
     #[Test]
     public function it_returns_a_cursor_and_resets_the_query(): void
     {
-        $repo = new AllowedUserRepositoryStub(new UserStub);
+        $repo = new AllowedUserRepositoryStub(new UserStub());
         $repo->create(['name' => 'A', 'email' => self::FIRST_EMAIL, 'status' => 'active']);
         $repo->create(['name' => 'B', 'email' => self::SECOND_EMAIL, 'status' => 'pending']);
 
         $names = $repo->filter(['status' => 'active'])->cursor()->map(
-            static fn (UserStub $user): string => $user->name,
+            static fn(UserStub $user): string => $user->name,
         )->values()->all();
 
         $this->assertSame(['A'], $names);
@@ -71,12 +71,12 @@ class HasIterationTest extends TestCase
     #[Test]
     public function it_returns_lazy_by_id_results_and_resets_the_query(): void
     {
-        $repo = new AllowedUserRepositoryStub(new UserStub);
+        $repo = new AllowedUserRepositoryStub(new UserStub());
         $repo->create(['name' => 'A', 'email' => self::FIRST_EMAIL, 'status' => 'active']);
         $repo->create(['name' => 'B', 'email' => self::SECOND_EMAIL, 'status' => 'active']);
 
         $names = $repo->filter(['status' => 'active'])->lazyById(1)->map(
-            static fn (UserStub $user): string => $user->name,
+            static fn(UserStub $user): string => $user->name,
         )->values()->all();
 
         $this->assertSame(['A', 'B'], $names);
@@ -86,12 +86,12 @@ class HasIterationTest extends TestCase
     #[Test]
     public function it_returns_lazy_by_id_desc_results_and_resets_the_query(): void
     {
-        $repo = new AllowedUserRepositoryStub(new UserStub);
+        $repo = new AllowedUserRepositoryStub(new UserStub());
         $repo->create(['name' => 'A', 'email' => self::FIRST_EMAIL, 'status' => 'active']);
         $repo->create(['name' => 'B', 'email' => self::SECOND_EMAIL, 'status' => 'active']);
 
         $names = $repo->filter(['status' => 'active'])->lazyByIdDesc(1)->map(
-            static fn (UserStub $user): string => $user->name,
+            static fn(UserStub $user): string => $user->name,
         )->values()->all();
 
         $this->assertSame(['B', 'A'], $names);

@@ -9,7 +9,9 @@ use JOOservices\LaravelRepository\Support\Order;
 interface OrderableRepositoryInterface
 {
     /**
-     * @param  iterable<int|string, Order|'asc'|'desc'>  $orders
+     * @param  iterable<int|string|Order, Order|'asc'|'desc'|string>  $orders
      */
     public function orderBy(iterable $orders): static;
+
+    public function clearOrders(): static;
 }

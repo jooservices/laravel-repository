@@ -33,7 +33,7 @@ class FieldProjectionEagerLoadTest extends TestCase
             'votes' => 1,
         ]);
 
-        $repo = (new PostRepositoryStub(new PostStub))
+        $repo = (new PostRepositoryStub(new PostStub()))
             ->withAllowedFields(['title'])
             ->withAllowedIncludes(['user']);
 
@@ -70,7 +70,7 @@ class FieldProjectionEagerLoadTest extends TestCase
             'votes' => 2,
         ]);
 
-        $repo = (new PostRepositoryStub(new PostStub))
+        $repo = (new PostRepositoryStub(new PostStub()))
             ->withAllowedFields(['title'])
             ->withAllowedIncludes(['user'])
             ->withStrictMode(true);
@@ -113,7 +113,7 @@ class FieldProjectionEagerLoadTest extends TestCase
             'votes' => 3,
         ]);
 
-        $repo = (new PostRepositoryStub(new PostStub))
+        $repo = (new PostRepositoryStub(new PostStub()))
             ->withAllowedFields(['title'])
             ->withAllowedIncludes(['author']);
 
@@ -148,7 +148,7 @@ class FieldProjectionEagerLoadTest extends TestCase
             'commentable_type' => UserStub::class,
         ]);
 
-        $repo = (new CommentRepositoryStub(new CommentStub))
+        $repo = (new CommentRepositoryStub(new CommentStub()))
             ->withAllowedFields(['body'])
             ->withAllowedIncludes(['commentable']);
 
@@ -186,7 +186,7 @@ class FieldProjectionEagerLoadTest extends TestCase
             'votes' => 0,
         ]);
 
-        $repo = (new PostRepositoryStub(new PostStub))->withAllowedFields(['title']);
+        $repo = (new PostRepositoryStub(new PostStub()))->withAllowedFields(['title']);
 
         $request = Request::create('/', 'GET', [
             'filter' => [
@@ -216,7 +216,7 @@ class FieldProjectionEagerLoadTest extends TestCase
         ]);
 
         // withCount does not hydrate the relation model; FK preserve is not required.
-        $repo = (new PostRepositoryStub(new PostStub))
+        $repo = (new PostRepositoryStub(new PostStub()))
             ->withAllowedFields(['title'])
             ->withAllowedIncludes(['userCount']);
 
@@ -232,7 +232,7 @@ class FieldProjectionEagerLoadTest extends TestCase
         $this->assertNotNull($post);
         $this->assertSame(['id', 'title'], array_keys(array_filter(
             $post->getAttributes(),
-            static fn (mixed $value, string $key): bool => $key !== 'user_count',
+            static fn(mixed $value, string $key): bool => $key !== 'user_count',
             ARRAY_FILTER_USE_BOTH,
         )));
         $this->assertSame(1, (int) $post->user_count);
@@ -253,7 +253,7 @@ class FieldProjectionEagerLoadTest extends TestCase
             'votes' => 0,
         ]);
 
-        $repo = (new PostRepositoryStub(new PostStub))
+        $repo = (new PostRepositoryStub(new PostStub()))
             ->withAllowedFields(['title'])
             ->withAllowedIncludes(['missingRelation']);
 

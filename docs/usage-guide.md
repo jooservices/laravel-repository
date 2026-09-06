@@ -19,7 +19,7 @@ This legacy page remains as a compatibility entry point. For the current docs tr
 ### Install via Composer
 
 ```bash
-composer require jooservices/laravel-repository
+composer require jooservices/laravel-repository:^4.0
 ```
 
 The package registers its service provider automatically (Laravel package discovery).

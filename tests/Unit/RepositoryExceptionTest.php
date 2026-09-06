@@ -55,8 +55,8 @@ class RepositoryExceptionTest extends TestCase
         ];
 
         $unsupportedClauseMessage = 'Request query clause [aggregate] is not supported. '
-            .'Supported clauses: where, orWhere, whereIn, whereBetween, whereNull, whereNotNull, '
-            .'fields, filters, scope, whereHas, with, order.';
+            . 'Supported clauses: where, orWhere, whereIn, whereBetween, whereNull, whereNotNull, '
+            . 'fields, filters, scope, whereHas, with, order.';
 
         $this->assertSame(
             $unsupportedClauseMessage,

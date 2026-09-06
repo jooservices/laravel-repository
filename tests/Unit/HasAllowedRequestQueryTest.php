@@ -34,7 +34,7 @@ class HasAllowedRequestQueryTest extends TestCase
     #[Test]
     public function it_applies_only_allowed_filters_in_permissive_mode(): void
     {
-        $repo = new AllowedUserRepositoryStub(new UserStub, ['status'], null, null, false);
+        $repo = new AllowedUserRepositoryStub(new UserStub(), ['status'], null, null, false);
         $repo->create(['name' => 'Allowed', 'email' => self::ALLOWED_EMAIL, 'status' => 'active']);
         $repo->create(['name' => 'Blocked', 'email' => self::BLOCKED_EMAIL, 'status' => 'active']);
 
@@ -55,7 +55,7 @@ class HasAllowedRequestQueryTest extends TestCase
     #[Test]
     public function it_throws_for_disallowed_filters_in_strict_mode(): void
     {
-        $repo = new AllowedUserRepositoryStub(new UserStub, ['status'], null, null, true);
+        $repo = new AllowedUserRepositoryStub(new UserStub(), ['status'], null, null, true);
 
         $request = Request::create('/', 'GET', [
             'filter' => [
@@ -74,7 +74,7 @@ class HasAllowedRequestQueryTest extends TestCase
     #[Test]
     public function it_requires_filter_allowlists_for_request_columns_in_strict_mode(): void
     {
-        $repo = new AllowedUserRepositoryStub(new UserStub, null, null, null, true);
+        $repo = new AllowedUserRepositoryStub(new UserStub(), null, null, null, true);
 
         $request = Request::create('/', 'GET', [
             'filter' => [
@@ -93,7 +93,7 @@ class HasAllowedRequestQueryTest extends TestCase
     #[Test]
     public function it_rejects_sql_like_filter_names_in_strict_mode(): void
     {
-        $repo = new AllowedUserRepositoryStub(new UserStub, ['status'], null, null, true);
+        $repo = new AllowedUserRepositoryStub(new UserStub(), ['status'], null, null, true);
 
         $request = Request::create('/', 'GET', [
             'filter' => [
@@ -112,7 +112,7 @@ class HasAllowedRequestQueryTest extends TestCase
     #[Test]
     public function it_applies_only_allowed_sorts_in_permissive_mode(): void
     {
-        $repo = new AllowedUserRepositoryStub(new UserStub, null, ['name'], null, false);
+        $repo = new AllowedUserRepositoryStub(new UserStub(), null, ['name'], null, false);
         $repo->create(['name' => 'B', 'email' => self::FIRST_SORT_EMAIL, 'status' => 'active']);
         $repo->create(['name' => 'A', 'email' => self::SECOND_SORT_EMAIL, 'status' => 'active']);
 
@@ -133,7 +133,7 @@ class HasAllowedRequestQueryTest extends TestCase
     #[Test]
     public function it_throws_for_disallowed_sorts_in_strict_mode(): void
     {
-        $repo = new AllowedUserRepositoryStub(new UserStub, null, ['name'], null, true);
+        $repo = new AllowedUserRepositoryStub(new UserStub(), null, ['name'], null, true);
 
         $request = Request::create('/', 'GET', [
             'filter' => [
@@ -152,7 +152,7 @@ class HasAllowedRequestQueryTest extends TestCase
     #[Test]
     public function it_requires_sort_allowlists_in_strict_mode(): void
     {
-        $repo = new AllowedUserRepositoryStub(new UserStub, null, null, null, true);
+        $repo = new AllowedUserRepositoryStub(new UserStub(), null, null, null, true);
 
         $request = Request::create('/', 'GET', [
             'filter' => [
@@ -171,7 +171,7 @@ class HasAllowedRequestQueryTest extends TestCase
     #[Test]
     public function it_applies_only_allowed_includes_in_permissive_mode(): void
     {
-        $repo = new AllowedUserRepositoryStub(new UserStub, null, null, ['profile'], false);
+        $repo = new AllowedUserRepositoryStub(new UserStub(), null, null, ['profile'], false);
         $repo->create(['name' => 'A', 'email' => self::INCLUDE_EMAIL, 'status' => 'active']);
 
         $request = Request::create('/', 'GET', [
@@ -188,7 +188,7 @@ class HasAllowedRequestQueryTest extends TestCase
     #[Test]
     public function it_throws_for_disallowed_includes_in_strict_mode(): void
     {
-        $repo = new AllowedUserRepositoryStub(new UserStub, null, null, ['profile'], true);
+        $repo = new AllowedUserRepositoryStub(new UserStub(), null, null, ['profile'], true);
 
         $request = Request::create('/', 'GET', [
             'filter' => [
@@ -205,7 +205,7 @@ class HasAllowedRequestQueryTest extends TestCase
     #[Test]
     public function it_applies_only_allowed_fields_in_permissive_mode(): void
     {
-        $repo = (new AllowedUserRepositoryStub(new UserStub))->withAllowedFields(['name']);
+        $repo = (new AllowedUserRepositoryStub(new UserStub()))->withAllowedFields(['name']);
         $repo->create(['name' => 'Allowed', 'email' => self::FIELD_EMAIL, 'status' => 'active']);
 
         $request = Request::create('/', 'GET', [
@@ -222,7 +222,7 @@ class HasAllowedRequestQueryTest extends TestCase
     #[Test]
     public function it_throws_for_disallowed_fields_in_strict_mode(): void
     {
-        $repo = (new AllowedUserRepositoryStub(new UserStub, null, null, null, true))->withAllowedFields(['name']);
+        $repo = (new AllowedUserRepositoryStub(new UserStub(), null, null, null, true))->withAllowedFields(['name']);
 
         $request = Request::create('/', 'GET', [
             'filter' => [
@@ -239,7 +239,7 @@ class HasAllowedRequestQueryTest extends TestCase
     #[Test]
     public function it_rejects_sql_like_field_names_in_strict_mode(): void
     {
-        $repo = (new AllowedUserRepositoryStub(new UserStub, null, null, null, true))->withAllowedFields(['name']);
+        $repo = (new AllowedUserRepositoryStub(new UserStub(), null, null, null, true))->withAllowedFields(['name']);
 
         $request = Request::create('/', 'GET', [
             'filter' => [
@@ -258,7 +258,7 @@ class HasAllowedRequestQueryTest extends TestCase
     {
         config()->set('laravel-repository.request_query.strict', true);
 
-        $repo = new AllowedUserRepositoryStub(new UserStub, ['status']);
+        $repo = new AllowedUserRepositoryStub(new UserStub(), ['status']);
 
         $request = Request::create('/', 'GET', [
             'filter' => [
@@ -278,7 +278,7 @@ class HasAllowedRequestQueryTest extends TestCase
     {
         config()->set('laravel-repository.request_query.strict', false);
 
-        $repo = new AllowedUserRepositoryStub(new UserStub, null, null, null, null, null, [
+        $repo = new AllowedUserRepositoryStub(new UserStub(), null, null, null, null, null, [
             'posts' => ['status', '', 'votes'],
             1 => ['ignored'],
             '   ' => ['ignored'],
@@ -296,7 +296,7 @@ class HasAllowedRequestQueryTest extends TestCase
     #[Test]
     public function it_throws_for_disallowed_scopes_in_strict_mode(): void
     {
-        $repo = new AllowedUserRepositoryStub(new UserStub, null, null, null, true, ['active']);
+        $repo = new AllowedUserRepositoryStub(new UserStub(), null, null, null, true, ['active']);
 
         $request = Request::create('/', 'GET', [
             'filter' => [
@@ -313,7 +313,7 @@ class HasAllowedRequestQueryTest extends TestCase
     #[Test]
     public function it_throws_for_invalid_scope_parameter_counts_in_strict_mode(): void
     {
-        $repo = (new AllowedUserRepositoryStub(new UserStub, null, null, null, true, ['email_domain']))
+        $repo = (new AllowedUserRepositoryStub(new UserStub(), null, null, null, true, ['email_domain']))
             ->withScopeMetadata([
                 'domain' => ['scope' => 'email_domain', 'parameters' => 1],
             ]);
@@ -335,7 +335,7 @@ class HasAllowedRequestQueryTest extends TestCase
     #[Test]
     public function it_throws_for_internal_filter_columns_when_only_aliases_are_public_in_strict_mode(): void
     {
-        $repo = (new AllowedUserRepositoryStub(new UserStub, ['email'], null, null, true))
+        $repo = (new AllowedUserRepositoryStub(new UserStub(), ['email'], null, null, true))
             ->withFilterAliases(['contact' => 'email']);
 
         $request = Request::create('/', 'GET', [
@@ -355,7 +355,7 @@ class HasAllowedRequestQueryTest extends TestCase
     #[Test]
     public function it_throws_for_disallowed_relation_count_clauses_in_strict_mode(): void
     {
-        $repo = new AllowedUserRepositoryStub(new UserStub, null, null, ['profile'], true);
+        $repo = new AllowedUserRepositoryStub(new UserStub(), null, null, ['profile'], true);
 
         $request = Request::create('/', 'GET', [
             'filter' => [
@@ -374,7 +374,7 @@ class HasAllowedRequestQueryTest extends TestCase
     #[Test]
     public function it_throws_for_disallowed_aggregate_includes_in_strict_mode(): void
     {
-        $repo = (new AllowedUserRepositoryStub(new UserStub, null, null, ['profile'], true))
+        $repo = (new AllowedUserRepositoryStub(new UserStub(), null, null, ['profile'], true))
             ->withAggregateIncludes([
                 'postsVotesSum' => ['relation' => 'posts', 'column' => 'votes', 'function' => 'sum'],
             ]);
@@ -394,7 +394,7 @@ class HasAllowedRequestQueryTest extends TestCase
     #[Test]
     public function it_throws_for_internal_relations_when_only_aliases_are_public_in_strict_mode(): void
     {
-        $repo = (new AllowedUserRepositoryStub(new UserStub, null, null, ['profile'], true))
+        $repo = (new AllowedUserRepositoryStub(new UserStub(), null, null, ['profile'], true))
             ->withRelationAliases(['account' => 'profile']);
 
         $request = Request::create('/', 'GET', [
@@ -412,7 +412,7 @@ class HasAllowedRequestQueryTest extends TestCase
     #[Test]
     public function it_allows_aggregate_include_helpers_when_the_relation_is_allowlisted_in_strict_mode(): void
     {
-        $repo = (new AllowedUserRepositoryStub(new UserStub, null, null, ['posts'], true))
+        $repo = (new AllowedUserRepositoryStub(new UserStub(), null, null, ['posts'], true))
             ->withAggregateIncludes([
                 'postsVotesSum' => ['relation' => 'posts', 'column' => 'votes', 'function' => 'sum'],
             ]);
@@ -434,7 +434,7 @@ class HasAllowedRequestQueryTest extends TestCase
     #[Test]
     public function it_applies_only_allowed_scopes_in_permissive_mode(): void
     {
-        $repo = new AllowedUserRepositoryStub(new UserStub, null, null, null, false, ['active']);
+        $repo = new AllowedUserRepositoryStub(new UserStub(), null, null, null, false, ['active']);
         $repo->create(['name' => 'Active', 'email' => self::SCOPE_EMAIL, 'status' => 'active']);
         $repo->create(['name' => 'Other', 'email' => 'other@test.com', 'status' => 'active']);
 
@@ -456,7 +456,7 @@ class HasAllowedRequestQueryTest extends TestCase
     public function it_throws_for_disallowed_relation_filters_in_strict_mode(): void
     {
         $repo = new AllowedUserRepositoryStub(
-            new UserStub,
+            new UserStub(),
             null,
             null,
             null,
@@ -486,7 +486,7 @@ class HasAllowedRequestQueryTest extends TestCase
     public function it_throws_for_disallowed_relation_columns_in_strict_mode(): void
     {
         $repo = new AllowedUserRepositoryStub(
-            new UserStub,
+            new UserStub(),
             null,
             null,
             null,
@@ -516,7 +516,7 @@ class HasAllowedRequestQueryTest extends TestCase
     public function it_throws_for_disallowed_relation_columns_in_where_doesnt_have_in_strict_mode(): void
     {
         $repo = new AllowedUserRepositoryStub(
-            new UserStub,
+            new UserStub(),
             null,
             null,
             null,
@@ -545,7 +545,7 @@ class HasAllowedRequestQueryTest extends TestCase
     #[Test]
     public function it_throws_for_disallowed_named_request_filters_in_strict_mode(): void
     {
-        $repo = (new AllowedUserRepositoryStub(new UserStub, null, null, null, true))
+        $repo = (new AllowedUserRepositoryStub(new UserStub(), null, null, null, true))
             ->withRequestFilters(['search' => SearchUsersRequestFilterStub::class]);
 
         $request = Request::create('/', 'GET', [
@@ -565,7 +565,7 @@ class HasAllowedRequestQueryTest extends TestCase
     #[Test]
     public function it_throws_for_unsupported_request_query_clauses_in_strict_mode(): void
     {
-        $repo = new AllowedUserRepositoryStub(new UserStub, null, null, null, true);
+        $repo = new AllowedUserRepositoryStub(new UserStub(), null, null, null, true);
 
         $request = Request::create('/', 'GET', [
             'filter' => [
@@ -582,7 +582,7 @@ class HasAllowedRequestQueryTest extends TestCase
     #[Test]
     public function it_throws_for_unsupported_request_query_operators_in_strict_mode(): void
     {
-        $repo = new AllowedUserRepositoryStub(new UserStub, ['status'], null, null, true);
+        $repo = new AllowedUserRepositoryStub(new UserStub(), ['status'], null, null, true);
 
         $request = Request::create('/', 'GET', [
             'filter' => [
@@ -602,7 +602,7 @@ class HasAllowedRequestQueryTest extends TestCase
     public function it_throws_for_unsupported_relation_filter_operators_in_strict_mode(): void
     {
         $repo = new AllowedUserRepositoryStub(
-            new UserStub,
+            new UserStub(),
             null,
             null,
             null,
@@ -633,7 +633,7 @@ class HasAllowedRequestQueryTest extends TestCase
     #[Test]
     public function it_throws_for_invalid_request_query_clause_shapes_in_strict_mode(): void
     {
-        $repo = new AllowedUserRepositoryStub(new UserStub, null, null, null, true);
+        $repo = new AllowedUserRepositoryStub(new UserStub(), null, null, null, true);
 
         $request = Request::create('/', 'GET', [
             'filter' => [
@@ -650,7 +650,7 @@ class HasAllowedRequestQueryTest extends TestCase
     #[Test]
     public function it_throws_for_invalid_request_query_payloads_in_strict_mode(): void
     {
-        $repo = new AllowedUserRepositoryStub(new UserStub, null, null, null, true);
+        $repo = new AllowedUserRepositoryStub(new UserStub(), null, null, null, true);
 
         $request = Request::create('/', 'GET', [
             'filter' => 'not-an-array',
@@ -665,7 +665,7 @@ class HasAllowedRequestQueryTest extends TestCase
     #[Test]
     public function it_throws_for_unknown_includes_in_strict_mode(): void
     {
-        $repo = new AllowedUserRepositoryStub(new UserStub, null, null, ['missingRelation'], true);
+        $repo = new AllowedUserRepositoryStub(new UserStub(), null, null, ['missingRelation'], true);
 
         $request = Request::create('/', 'GET', [
             'filter' => [
@@ -683,7 +683,7 @@ class HasAllowedRequestQueryTest extends TestCase
     public function it_throws_for_unknown_relation_filter_paths_in_strict_mode(): void
     {
         $repo = new AllowedUserRepositoryStub(
-            new UserStub,
+            new UserStub(),
             null,
             null,
             null,
