@@ -42,7 +42,7 @@ use Illuminate\Http\Request;
  *     order: list<OrderClause>
  * }
  */
-class RequestQueryParser
+final class RequestQueryParser
 {
     /**
      * Parse array payload (filter/query data) into structured clauses.
@@ -53,9 +53,9 @@ class RequestQueryParser
     public static function parse(array $data): array
     {
         if (isset($data['filter']) && is_array($data['filter'])) {
-            $data = $data['filter'];
+            $data = self::normalizeRootData($data['filter']);
         } elseif (isset($data['query']) && is_array($data['query'])) {
-            $data = $data['query'];
+            $data = self::normalizeRootData($data['query']);
         }
 
         return [
@@ -177,7 +177,7 @@ class RequestQueryParser
     /**
      * @return WhereClause|null
      */
-    private static function parseWhereItem(int|string $index, mixed $item): ?array
+    private static function parseWhereItem(int | string $index, mixed $item): ?array
     {
         $result = null;
 
@@ -185,11 +185,11 @@ class RequestQueryParser
             return $result;
         }
 
-        if (isset($item['column'], $item['value'])) {
+        if (isset($item['column'], $item['value']) && is_string($item['column'])) {
             $operator = $item['operator'] ?? '=';
 
             $result = [
-                'column' => (string) $item['column'],
+                'column' => $item['column'],
                 'operator' => is_string($operator) ? $operator : '=',
                 'value' => $item['value'],
             ];
@@ -224,12 +224,12 @@ class RequestQueryParser
     {
         $result = [];
         foreach ($items as $item) {
-            if (! is_array($item) || ! isset($item['column'])) {
+            if (! is_array($item) || ! isset($item['column']) || ! is_string($item['column'])) {
                 continue;
             }
             $values = $item['values'] ?? $item['value'] ?? [];
             $result[] = [
-                'column' => (string) $item['column'],
+                'column' => $item['column'],
                 'values' => is_array($values) ? array_values($values) : [$values],
             ];
         }
@@ -245,12 +245,12 @@ class RequestQueryParser
     {
         $result = [];
         foreach ($items as $item) {
-            if (! is_array($item) || ! isset($item['column'])) {
+            if (! is_array($item) || ! isset($item['column']) || ! is_string($item['column'])) {
                 continue;
             }
             $range = $item['range'] ?? $item['value'] ?? [];
             $result[] = [
-                'column' => (string) $item['column'],
+                'column' => $item['column'],
                 'range' => is_array($range) ? array_values($range) : [],
             ];
         }
@@ -260,7 +260,7 @@ class RequestQueryParser
 
     /**
      * @param  array<int, string>|array<string, mixed>  $items
-     * @return array<int, string>
+     * @return list<string>
      */
     public static function parseWhereNull(array $items): array
     {
@@ -277,7 +277,7 @@ class RequestQueryParser
 
     /**
      * @param  array<int, string>|array<string, mixed>  $items
-     * @return array<int, string>
+     * @return list<string>
      */
     public static function parseWhereNotNull(array $items): array
     {

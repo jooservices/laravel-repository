@@ -16,7 +16,7 @@ class RequestQueryMetadataAndFiltersTest extends TestCase
     #[Test]
     public function it_normalizes_request_filters(): void
     {
-        $repo = (new AllowedUserRepositoryStub(new UserStub))
+        $repo = (new AllowedUserRepositoryStub(new UserStub()))
             ->withRequestFilters([
                 ' search ' => SearchUsersRequestFilterStub::class,
                 'callback' => static function (Builder $query, mixed $value): void {
@@ -37,7 +37,7 @@ class RequestQueryMetadataAndFiltersTest extends TestCase
     #[Test]
     public function it_normalizes_alias_and_scope_metadata(): void
     {
-        $repo = (new AllowedUserRepositoryStub(new UserStub))
+        $repo = (new AllowedUserRepositoryStub(new UserStub()))
             ->withFilterAliases([
                 ' contact ' => 'email',
                 'skip' => '   ',
@@ -67,7 +67,7 @@ class RequestQueryMetadataAndFiltersTest extends TestCase
     #[Test]
     public function it_normalizes_aggregate_includes_and_value_rules(): void
     {
-        $repo = (new AllowedUserRepositoryStub(new UserStub))
+        $repo = (new AllowedUserRepositoryStub(new UserStub()))
             ->withAggregateIncludes([
                 'postsVotesSum' => [
                     'relation' => 'posts',
@@ -145,7 +145,7 @@ class RequestQueryMetadataAndFiltersTest extends TestCase
             'relations' => ['posts' => ['status' => ['trim']]],
         ], $repo->valueRules());
 
-        $emptyRulesRepo = (new AllowedUserRepositoryStub(new UserStub))->withValueRules([
+        $emptyRulesRepo = (new AllowedUserRepositoryStub(new UserStub()))->withValueRules([
             'filters' => 'skip',
             'namedFilters' => 'skip',
             'scopes' => 'skip',

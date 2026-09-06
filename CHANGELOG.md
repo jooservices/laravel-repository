@@ -7,6 +7,56 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.0.0] - 2026-09-06
+
+### Added
+
+- Presets `ApiRepository` and `ReadRepository` with Artisan `make:repository`
+  (`--preset=api|read|empty`) and publishable stubs
+- `ReadRepositoryInterface` for read-only repositories (no CRUD contract)
+- Query extras: `findMany`, `findBy`, `updateOrCreate`, `upsert`, read aggregates
+  (`sum` / `avg` / `min` / `max`), `simplePaginate`, `cursorPaginateFromRequest`,
+  `clearOrders`
+- Opt-in `HasSoftDeletes`, `HasLocking`, `HasDebug`, `HasQueryProfiles`
+- Request operators `before`, `after`, `date`, `jsonContains`
+- Value rules `ignore` / `default` / `nullable` and sort shorthand (`-created_at`)
+- Cookbook and expanded examples for profiles, soft deletes, and debug helpers
+
+### Changed
+
+- PHPStan baseline is **max** with Larastan and `phpstan-strict-rules` (was level 6)
+- Pint preset is **`per`** (PER-CS 3.0)
+- `forProfile()` restores a captured repository **baseline**, then overlays only
+  keys present in the named profile (omitted keys no longer widen to `null`)
+- Named request filters run on an isolated builder so `orWhere` cannot escape
+  criteria; joins, selects, orders, limits, groups, and havings are promoted
+- Cursor pagination merges sparse projections with order/PK columns, prefers
+  qualified primary keys under joins, and preserves Expression columns
+  (for example `withCount`) and select bindings
+- Cache keys encode `DateTimeInterface` with microseconds; unsupported objects
+  are rejected (object IDs are not cache identity)
+- Relation discovery requires a native `Relation` return type, or an explicit
+  allowlist / `$trustedRelations` path (descendants of a short trust are not
+  authorized)
+- Criteria tracking uses `WeakMap`; `updateOrCreate` / criteria-bound `upsert`
+  honor scope; global-scope-safe mutation helpers retain query state
+
+### Fixed
+
+- Security and correctness audit findings around criteria isolation, relation
+  method invocation, profile permission widening, cache-key collisions, and
+  cursor pagination edge cases
+
+### Removed
+
+- Parallel AI skill trees under `ai/`, `.claude/commands/`, and similar adapter
+  copies that duplicated workspace policy; use root `AGENTS.md` and workspace
+  `.ai/skills/`
+
+### Migration
+
+See [UPGRADE-4.0.md](UPGRADE-4.0.md) for breaking-change guidance from `1.x`.
+
 ## [1.7.0] - 2026-07-26
 
 ### Changed
@@ -16,7 +66,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and agent skills. Composer package name remains `jooservices/laravel-repository`.
 - Consumers must use `JOOservices\…` in imports, type hints, and service
   provider references when upgrading.
-
 
 ## [1.5.0] - 2026-07-23
 

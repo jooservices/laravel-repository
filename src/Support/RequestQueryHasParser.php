@@ -7,7 +7,7 @@ namespace JOOservices\LaravelRepository\Support;
 /**
  * @phpstan-type HasClause array{relation: string, operator: string, count: int}
  */
-class RequestQueryHasParser
+final class RequestQueryHasParser
 {
     /**
      * @param  array<int|string, mixed>  $items
@@ -30,7 +30,7 @@ class RequestQueryHasParser
     /**
      * @return HasClause|null
      */
-    private static function parseItem(int|string $index, mixed $item): ?array
+    private static function parseItem(int | string $index, mixed $item): ?array
     {
         $clause = null;
 

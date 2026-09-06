@@ -102,6 +102,7 @@ class RequestQuerySupportClassesTest extends TestCase
         $this->assertSame([
             ['column' => 'created_at', 'direction' => 'desc'],
             ['column' => 'name', 'direction' => 'asc'],
+            ['column' => 'invalid', 'direction' => 'asc'],
         ], RequestQueryProjectionParser::parseOrder([
             ['column' => ' created_at ', 'direction' => 'DESC'],
             ['name', 'sideways'],

@@ -1,44 +1,42 @@
 # JOOservices Laravel Repository
 
-[![codecov](https://codecov.io/gh/jooservices/laravel-repository/branch/master/graph/badge.svg)](https://codecov.io/gh/jooservices/laravel-repository)
-[![CI](https://github.com/jooservices/laravel-repository/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/jooservices/laravel-repository/actions/workflows/ci.yml)
+[![CI](https://github.com/jooservices/laravel-repository/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/jooservices/laravel-repository/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/jooservices/laravel-repository/graph/badge.svg)](https://codecov.io/gh/jooservices/laravel-repository)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/jooservices/laravel-repository/badge)](https://securityscorecards.dev/viewer/?uri=github.com/jooservices/laravel-repository)
 [![PHP Version](https://img.shields.io/badge/PHP-8.5%2B-blue.svg)](https://www.php.net/)
+[![Release](https://img.shields.io/badge/version-4.0.0-blue.svg)](CHANGELOG.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Packagist Version](https://img.shields.io/packagist/v/jooservices/laravel-repository)](https://packagist.org/packages/jooservices/laravel-repository)
 
-The **JOOservices Laravel Repository** package is a PHP 8.5+ Laravel package for trait-based repository composition, CRUD, filtering, ordering, and request-driven query composition.
+**JOOservices Laravel Repository** is a PHP 8.5+ Laravel package for trait-based
+repository composition: CRUD, filtering, ordering, criteria, and request-driven
+query composition on Eloquent.
 
-Package name: `jooservices/laravel-repository`
+Composer package: `jooservices/laravel-repository` — current line: **v4.0.0**.
+Upgrading from `1.x`: see [UPGRADE-4.0.md](UPGRADE-4.0.md).
 
 ## Install
 
 ```bash
-composer require jooservices/laravel-repository
+composer require jooservices/laravel-repository:^4.0
 ```
 
-Optionally publish the package config:
+Optionally publish config and stubs:
 
 ```bash
 php artisan vendor:publish --tag=laravel-repository-config
+php artisan vendor:publish --tag=laravel-repository-stubs
 ```
 
 ## Quick example
 
 ```php
 use App\Models\User;
-use JOOservices\LaravelRepository\Contracts\RepositoryInterface;
-use JOOservices\LaravelRepository\Repositories\EloquentRepository;
-use JOOservices\LaravelRepository\Traits\HasCrud;
-use JOOservices\LaravelRepository\Traits\HasFilter;
-use JOOservices\LaravelRepository\Traits\HasOrder;
+use JOOservices\LaravelRepository\Repositories\Presets\ApiRepository;
 
-final class UserRepository extends EloquentRepository implements RepositoryInterface
+/** @extends ApiRepository<User> */
+final class UserRepository extends ApiRepository
 {
-    use HasCrud;
-    use HasFilter;
-    use HasOrder;
-
     public function __construct(User $model)
     {
         parent::__construct($model);
@@ -47,66 +45,62 @@ final class UserRepository extends EloquentRepository implements RepositoryInter
 
 $repository = app(UserRepository::class);
 $user = $repository->find($id);
-$users = $repository->filter(['status' => 'active'])->orderBy(['created_at' => 'desc'])->paginate(15);
+$users = $repository->filter(['status' => 'active'])->orderBy(['-created_at'])->paginate(15);
 ```
+
+Scaffold:
+
+```bash
+php artisan make:repository UserRepository --model=User --preset=api
+```
+
+See the [Cookbook](docs/03-examples/cookbook.md) for profiles, value rules, soft
+deletes, locking, and debug helpers.
 
 ## What is supported today
 
-- trait-based repository composition through segregated contracts and traits
-- CRUD operations through `HasCrud`
-- filter chains, collection retrieval, and pagination through `HasFilter`
-- ordering through `HasOrder`
-- request-driven query parsing through `HasRequestQuery`
-- opt-in request-query allowlists and strict mode through `HasAllowedRequestQuery`
-- request-driven field selection, named request filters, callback micro filters, request-query aliases, aggregate include helpers, and value-normalization rules
-- first-class request operators such as `exact`, `partial`, `beginsWith`, and `endsWith`, plus safe aliases like `eq`, `neq`, `gt`, `gte`, `lt`, `lte`, and `like`
-- opt-in request scopes, scope definitions, relation count clauses, nested relation filters including `whereHas` and `whereDoesntHave` variants, derived count or exists includes, additional sum or avg or min or max aggregate includes, and cursor pagination
-- reusable criteria stacks through `HasCriteria`
-- read terminals such as `first`, `firstOrFail`, `exists`, and `count` through `HasRead`
-- chunk, lazy, cursor, and `lazyById` iteration through `HasIteration`
-- safe request pagination through `paginateFromRequest()`
-- opt-in cache wrappers and cache-key helpers through `HasCache`
+- trait-based composition through segregated contracts and traits
+- presets `ApiRepository` / `ReadRepository` and Artisan `make:repository`
+- CRUD (`HasCrud`) including `findMany`, `findBy`, `updateOrCreate`, `upsert`
+- filters, pagination, and `simplePaginate` (`HasFilter`)
+- ordering and sort shorthand (`HasOrder`)
+- request-driven queries (`HasRequestQuery`) with allowlists / strict mode
+- named filters, field selection, scopes, relation filters, aggregate includes
+- operators including `exact`, `partial`, `before`, `after`, `date`, `jsonContains`
+- criteria (`HasCriteria`), soft deletes, locking, SQL debug
+- named query profiles with restrictive baseline semantics
+- cursor pagination that preserves sparse and Expression projections
+- opt-in cache wrappers (`HasCache`) with stable typed cache keys
 - reusable `Filter` and `Order` value objects
 
-## Important current boundaries
+## Important boundaries
 
-- repositories opt into behavior through traits; no feature is globally implied
-- query state is lazily created and reset after terminal filter operations
-- `RequestQueryParser` supports only the implemented clause families
+- capabilities are opt-in through traits; nothing is globally implied
+- query state is lazy and resets after terminal operations
+- `RequestQueryParser` supports only the documented clause families
+- relation methods should declare a `Relation` return type (or use an explicit
+  trust / allowlist path)
 
 ## Documentation
-
-Start with:
 
 - [Documentation Hub](docs/README.md)
 - [Installation](docs/01-getting-started/installation.md)
 - [Quick Start](docs/01-getting-started/quick-start.md)
-- [Trait-Based Composition](docs/02-user-guide/trait-based-composition.md)
+- [Request Query Support](docs/02-user-guide/request-query.md)
 - [Examples](docs/03-examples/README.md)
-- [Competitive Comparison And Roadmap](docs/05-maintenance/competitive-comparison-and-roadmap.md)
-- [Risks, Legacy, and Gaps](docs/05-maintenance/risks-legacy-and-gaps.md)
-
-## AI Support
-
-This repository includes an AI skill pack for agents working in Cursor, Claude Code, VS Code, JetBrains, and Antigravity.
-
-Start with:
-
-- [AGENTS.md](AGENTS.md)
-- [CLAUDE.md](CLAUDE.md)
-- [AI Skills Map](ai/skills/README.md)
-- [AI Skills Usage Guide](ai/skills/USAGE.md)
-
-The canonical skill source lives in [`.github/skills/`](.github/skills/), with adapter layers for each supported AI environment.
+- [Cookbook](docs/03-examples/cookbook.md)
+- [Upgrade 4.0](UPGRADE-4.0.md)
+- [Changelog](CHANGELOG.md)
 
 ## Development
 
 ```bash
-composer lint:all
+composer lint
 composer test
+composer check
 ```
 
-Contributor workflow details live in:
+Contributor workflow:
 
 - [Contributing](CONTRIBUTING.md)
 - [Security Policy](SECURITY.md)
@@ -115,21 +109,9 @@ Contributor workflow details live in:
 - [Testing](docs/04-development/testing.md)
 - [CI/CD](docs/04-development/ci-cd.md)
 - [Release Process](docs/04-development/release-process.md)
-- [AI Skills](docs/04-development/ai-skills.md)
 
-## GitHub Actions and Services
-
-The repository workflow set is designed to include CI, release, PR labeler, semantic PR title, scorecard, and secret-scanning workflows.
-
-The CI baseline covers security checks, linting, tests with coverage artifacts, and optional dependency review. Release is tag-driven through `vX.Y.Z` tags.
-
-Current external service integrations:
-
-- `Codecov` for CI coverage uploads when `CODECOV_TOKEN` is configured
-
-## Changelog
-
-See [CHANGELOG.md](CHANGELOG.md) for version history.
+Project agents: [AGENTS.md](AGENTS.md) (workspace policy in the JOOservices root
+`AGENTS.md`).
 
 ## License
 

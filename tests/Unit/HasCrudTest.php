@@ -22,7 +22,7 @@ class HasCrudTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->repo = new UserRepositoryStub(new UserStub);
+        $this->repo = new UserRepositoryStub(new UserStub());
     }
 
     #[Test]
@@ -105,11 +105,11 @@ class HasCrudTest extends TestCase
     #[Test]
     public function find_and_all_honor_pushed_criteria_without_filter_chain_state(): void
     {
-        $repo = new AllowedUserRepositoryStub(new UserStub);
+        $repo = new AllowedUserRepositoryStub(new UserStub());
         $active = $repo->create(['name' => 'Active', 'email' => 'active@x.com', 'status' => 'active']);
         $pending = $repo->create(['name' => 'Pending', 'email' => 'pending@x.com', 'status' => 'pending']);
 
-        $repo->pushCriteria(new ActiveStatusCriteriaStub);
+        $repo->pushCriteria(new ActiveStatusCriteriaStub());
 
         $this->assertSame($active->id, $repo->find($active->id)?->id);
         $this->assertNull($repo->find($pending->id));
@@ -125,8 +125,7 @@ class HasCrudTest extends TestCase
     #[Test]
     public function crud_reads_honor_the_new_query_with_criteria_extension_hook(): void
     {
-        $repo = new class(new UserStub) extends UserRepositoryStub
-        {
+        $repo = new class (new UserStub()) extends UserRepositoryStub {
             /**
              * @return Builder<UserStub>
              */

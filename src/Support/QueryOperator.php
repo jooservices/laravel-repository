@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace JOOservices\LaravelRepository\Support;
 
+use DateTimeInterface;
 use Illuminate\Database\Eloquent\Builder;
 use JOOservices\LaravelRepository\Exceptions\InvalidRequestQueryException;
 
-class QueryOperator
+final class QueryOperator
 {
     /**
      * @var array<string, string>
@@ -37,21 +38,31 @@ class QueryOperator
         'partial',
         'beginswith',
         'endswith',
+        'before',
+        'after',
+        'date',
+        'jsoncontains',
     ];
 
     /**
      * @param  Builder<*>  $query
+     *
+     * @throws InvalidRequestQueryException
      */
     public static function apply(Builder $query, string $method, string $column, string $operator, mixed $value): void
     {
         $normalized = self::normalize($operator);
 
         match ($normalized) {
-            'exact' => $query->{$method}($column, '=', $value),
-            'partial' => $query->{$method}($column, 'like', self::wrapValue($value, '%', '%')),
-            'beginswith' => $query->{$method}($column, 'like', self::wrapValue($value, '', '%')),
-            'endswith' => $query->{$method}($column, 'like', self::wrapValue($value, '%', '')),
-            default => $query->{$method}($column, self::SQL_ALIASES[$normalized] ?? $operator, $value),
+            'exact' => self::callWhere($query, $method, $column, '=', $value),
+            'partial' => self::callWhere($query, $method, $column, 'like', self::wrapValue($value, '%', '%')),
+            'beginswith' => self::callWhere($query, $method, $column, 'like', self::wrapValue($value, '', '%')),
+            'endswith' => self::callWhere($query, $method, $column, 'like', self::wrapValue($value, '%', '')),
+            'before' => self::callWhere($query, $method, $column, '<', $value),
+            'after' => self::callWhere($query, $method, $column, '>', $value),
+            'date' => self::callWhereDate($query, $method, $column, $value),
+            'jsoncontains' => self::callJsonContains($query, $method, $column, $value),
+            default => self::callWhere($query, $method, $column, self::SQL_ALIASES[$normalized] ?? $operator, $value),
         };
     }
 
@@ -68,6 +79,9 @@ class QueryOperator
             || array_key_exists($normalized, self::SQL_ALIASES);
     }
 
+    /**
+     * @throws InvalidRequestQueryException
+     */
     public static function assertSupported(string $operator): void
     {
         if (! self::isSupported($operator)) {
@@ -89,6 +103,10 @@ class QueryOperator
             'partial',
             'beginsWith',
             'endsWith',
+            'before',
+            'after',
+            'date',
+            'jsonContains',
             'eq',
             'neq',
             'gt',
@@ -106,8 +124,79 @@ class QueryOperator
         ];
     }
 
+    /**
+     * @param  Builder<*>  $query
+     *
+     * @throws InvalidRequestQueryException
+     */
+    private static function callWhere(
+        Builder $query,
+        string $method,
+        string $column,
+        string $operator,
+        mixed $value,
+    ): void {
+        match ($method) {
+            'where' => $query->where($column, $operator, $value),
+            'orWhere' => $query->orWhere($column, $operator, $value),
+            default => throw new InvalidRequestQueryException(sprintf(
+                'Request query method [%s] is not supported. Supported methods: where, orWhere.',
+                $method,
+            )),
+        };
+    }
+
+    /**
+     * @param  Builder<*>  $query
+     *
+     * @throws InvalidRequestQueryException
+     */
+    private static function callWhereDate(Builder $query, string $method, string $column, mixed $value): void
+    {
+        if (! ($value instanceof DateTimeInterface || is_string($value) || $value === null)) {
+            throw new InvalidRequestQueryException(
+                'Request query date operator value must be DateTimeInterface, string, or null.',
+            );
+        }
+
+        match ($method) {
+            'where' => $query->getQuery()->whereDate($column, $value),
+            'orWhere' => $query->getQuery()->orWhereDate($column, $value),
+            default => throw new InvalidRequestQueryException(sprintf(
+                'Request query method [%s] is not supported for date. Supported methods: where, orWhere.',
+                $method,
+            )),
+        };
+    }
+
+    /**
+     * @param  Builder<*>  $query
+     *
+     * @throws InvalidRequestQueryException
+     */
+    private static function callJsonContains(Builder $query, string $method, string $column, mixed $value): void
+    {
+        match ($method) {
+            'where' => $query->getQuery()->whereJsonContains($column, $value),
+            'orWhere' => $query->getQuery()->orWhereJsonContains($column, $value),
+            default => throw new InvalidRequestQueryException(sprintf(
+                'Request query method [%s] is not supported for jsonContains. Supported methods: where, orWhere.',
+                $method,
+            )),
+        };
+    }
+
+    /**
+     * @throws InvalidRequestQueryException
+     */
     private static function wrapValue(mixed $value, string $prefix, string $suffix): string
     {
-        return $prefix.(string) $value.$suffix;
+        if ($value !== null && ! is_scalar($value)) {
+            throw new InvalidRequestQueryException(
+                'Request query operator value must be a scalar or null for pattern matching.',
+            );
+        }
+
+        return $prefix . (string) $value . $suffix;
     }
 }

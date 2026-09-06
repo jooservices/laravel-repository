@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace JOOservices\LaravelRepository\Traits;
 
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
+use InvalidArgumentException;
 use JOOservices\LaravelRepository\Contracts\FilterInterface;
 
 trait HasFilter
@@ -20,7 +22,7 @@ trait HasFilter
         foreach ($filters as $key => $value) {
             if ($value instanceof FilterInterface) {
                 $value->apply($query);
-            } else {
+            } elseif (is_string($key)) {
                 $query->where($key, $value);
             }
         }
@@ -42,11 +44,27 @@ trait HasFilter
 
     /**
      * @return LengthAwarePaginator<int, Model>
+     *
+     * @throws InvalidArgumentException
      */
     public function paginate(int $perPage = 15): LengthAwarePaginator
     {
         try {
             return $this->getQuery()->paginate($perPage);
+        } finally {
+            $this->query = null;
+        }
+    }
+
+    /**
+     * @return Paginator<int, Model>
+     *
+     * @throws InvalidArgumentException
+     */
+    public function simplePaginate(int $perPage = 15): Paginator
+    {
+        try {
+            return $this->getQuery()->simplePaginate($perPage);
         } finally {
             $this->query = null;
         }

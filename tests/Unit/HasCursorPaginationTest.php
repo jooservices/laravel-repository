@@ -19,7 +19,7 @@ class HasCursorPaginationTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->repo = new AllowedUserRepositoryStub(new UserStub);
+        $this->repo = new AllowedUserRepositoryStub(new UserStub());
     }
 
     #[Test]

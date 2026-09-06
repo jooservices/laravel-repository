@@ -139,4 +139,17 @@ class AllowedUserRepositoryStub extends EloquentRepository implements ARQ, CPR, 
 
         return $this;
     }
+
+    /**
+     * @param  list<string>  $trustedRelations
+     */
+    public function withTrustedRelations(array $trustedRelations): static
+    {
+        $this->trustedRelations = array_values(array_filter(
+            $trustedRelations,
+            static fn(mixed $value): bool => is_string($value) && $value !== '',
+        ));
+
+        return $this;
+    }
 }

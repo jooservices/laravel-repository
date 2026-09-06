@@ -78,7 +78,12 @@ trait HasRequestQueryMetadata
     }
 
     /**
-     * @return array<string, array{relation: string, column: string, function: string, attribute: string}>
+     * @return array<string, array{
+     *     relation: string,
+     *     column: string,
+     *     function: 'sum'|'avg'|'min'|'max',
+     *     attribute: string
+     * }>
      */
     public function aggregateIncludes(): array
     {
@@ -134,8 +139,9 @@ trait HasRequestQueryMetadata
         if (is_string($definition)) {
             $scope = trim($definition);
         } elseif (is_array($definition)) {
-            $scope = $this->normalizeScopeName($requestName, $definition);
-            $parameters = $this->normalizeScopeParameterCount($definition);
+            $normalizedDefinition = $this->normalizeStringKeyedArray($definition);
+            $scope = $this->normalizeScopeName($requestName, $normalizedDefinition);
+            $parameters = $this->normalizeScopeParameterCount($normalizedDefinition);
         }
 
         if ($scope === '') {
@@ -146,6 +152,23 @@ trait HasRequestQueryMetadata
             'scope' => $scope,
             'parameters' => $parameters,
         ];
+    }
+
+    /**
+     * @param  array<mixed, mixed>  $definition
+     * @return array<string, mixed>
+     */
+    private function normalizeStringKeyedArray(array $definition): array
+    {
+        $normalized = [];
+
+        foreach ($definition as $key => $value) {
+            if (is_string($key)) {
+                $normalized[$key] = $value;
+            }
+        }
+
+        return $normalized;
     }
 
     /**
@@ -195,7 +218,7 @@ trait HasRequestQueryMetadata
     }
 
     /**
-     * @return array{relation: string, column: string, function: string, attribute: string}|null
+     * @return array{relation: string, column: string, function: 'sum'|'avg'|'min'|'max', attribute: string}|null
      */
     private function normalizeAggregateDefinition(string $requestName, mixed $definition): ?array
     {
@@ -217,7 +240,7 @@ trait HasRequestQueryMetadata
                     $relation !== ''
                     && $column !== ''
                     && $attribute !== ''
-                    && in_array($function, ['sum', 'avg', 'min', 'max'], true)
+                    && ($function === 'sum' || $function === 'avg' || $function === 'min' || $function === 'max')
                 ) {
                     $normalized = [
                         'relation' => $relation,

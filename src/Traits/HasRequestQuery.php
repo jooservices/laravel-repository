@@ -5,25 +5,36 @@ declare(strict_types=1);
 namespace JOOservices\LaravelRepository\Traits;
 
 use Closure;
+use Illuminate\Contracts\Pagination\CursorPaginator;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Attributes\Scope as ScopeAttribute;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use InvalidArgumentException;
 use JOOservices\LaravelRepository\Contracts\AllowsRequestQueryInterface;
 use JOOservices\LaravelRepository\Contracts\ProvidesRequestFiltersInterface;
 use JOOservices\LaravelRepository\Contracts\ProvidesRequestQueryMetadataInterface;
 use JOOservices\LaravelRepository\Contracts\RequestFilterInterface;
 use JOOservices\LaravelRepository\Exceptions\InvalidRequestQueryException;
+use JOOservices\LaravelRepository\Exceptions\RepositoryException;
 use JOOservices\LaravelRepository\Support\QueryOperator;
 use JOOservices\LaravelRepository\Support\RequestQueryInput;
 use JOOservices\LaravelRepository\Support\RequestQueryParser;
 use JOOservices\LaravelRepository\Support\RequestQueryValueNormalizer;
-use LogicException;
-use Throwable;
+use JOOservices\LaravelRepository\Support\SkippedRequestValue;
+use ReflectionException;
+use ReflectionIntersectionType;
+use ReflectionMethod;
+use ReflectionNamedType;
+use ReflectionType;
+use ReflectionUnionType;
+use RuntimeException;
 
 /**
  * @phpstan-import-type QueryClauses from RequestQueryParser
@@ -71,8 +82,16 @@ trait HasRequestQuery
         'order',
     ];
 
+    /**
+     * @throws InvalidRequestQueryException
+     * @throws InvalidArgumentException
+     * @throws RuntimeException
+     * @throws RepositoryException
+     */
     public function fromRequest(Request $request): static
     {
+        $failed = true;
+
         try {
             $data = $this->requestQueryData($request);
             $this->assertSupportedRequestQuery($data);
@@ -86,36 +105,32 @@ trait HasRequestQuery
             };
 
             $this->applyFieldClauses($query, $clauses['fields'], $clauses['with']);
-            $this->applyNamedFilterClauses($query, $clauses['filters']);
-            $this->applyWhereClauses($query, $clauses['where'], null, $filterValueResolver);
-            $this->applyOrWhereClauses($query, $clauses['orWhere'], null, $filterValueResolver);
-            $this->applyWhereInClauses($query, $clauses['whereIn'], null, $filterValueResolver);
-            $this->applyWhereBetweenClauses($query, $clauses['whereBetween'], null, $filterValueResolver);
-            $this->applyWhereNullClauses($query, $clauses['whereNull']);
-            $this->applyWhereNotNullClauses($query, $clauses['whereNotNull']);
+            $this->applyGroupedRequestFilterClauses($query, $clauses, $filterValueResolver);
             $this->applyScopeClauses($query, $clauses['scope']);
-            $this->applyHasClauses($query, $clauses['has']);
-            $this->applyWhereHasClauses($query, $clauses['whereHas']);
-            $this->applyOrWhereHasClauses($query, $clauses['orWhereHas']);
-            $this->applyWhereDoesntHaveClauses($query, $clauses['whereDoesntHave']);
-            $this->applyOrWhereDoesntHaveClauses($query, $clauses['orWhereDoesntHave']);
             $this->applyIncludeClauses($query, $clauses['with']);
             $this->applyOrderClauses($query, $clauses['order']);
-        } catch (Throwable $exception) {
+
+            $failed = false;
+
+            return $this;
+        } finally {
             // Any request-query failure must drop fluent state so later calls start clean,
             // including validation failures that throw before a new builder is created.
-            $this->query = null;
-
-            throw $exception;
+            if ($failed) {
+                $this->query = null;
+            }
         }
-
-        return $this;
     }
 
     /**
      * Apply request query clauses and paginate with package request per-page guards.
      *
      * @return LengthAwarePaginator<int, Model>
+     *
+     * @throws InvalidRequestQueryException
+     * @throws InvalidArgumentException
+     * @throws RuntimeException
+     * @throws RepositoryException
      */
     public function paginateFromRequest(Request $request, string $perPageKey = 'per_page'): LengthAwarePaginator
     {
@@ -129,7 +144,183 @@ trait HasRequestQuery
     }
 
     /**
+     * Apply request query clauses and cursor-paginate with package request per-page guards.
+     *
+     * @return CursorPaginator<int, Model>
+     *
+     * @throws InvalidRequestQueryException
+     * @throws InvalidArgumentException
+     * @throws RuntimeException
+     * @throws RepositoryException
+     */
+    public function cursorPaginateFromRequest(
+        Request $request,
+        string $perPageKey = 'per_page',
+        string $cursorName = 'cursor',
+    ): CursorPaginator {
+        $this->fromRequest($request);
+        $query = $this->getQuery();
+        $this->ensureRequestCursorPaginationOrder($query);
+        $this->ensureRequestCursorOrderColumnsSelected($query);
+
+        try {
+            $cursor = $request->input($cursorName);
+
+            return $query->cursorPaginate(
+                $this->requestPerPage($request, $perPageKey),
+                ['*'],
+                $cursorName,
+                is_string($cursor) ? $cursor : null,
+            );
+        } finally {
+            $this->query = null;
+        }
+    }
+
+    /**
+     * Named filters may add joins / selects; those must run on the outer query.
+     * Only pure boolean / relation predicates are nested for criteria isolation.
+     *
+     * @param  QueryClauses  $clauses
+     */
+    private function hasGroupedRequestFilterClauses(array $clauses): bool
+    {
+        return $clauses['where'] !== []
+            || $clauses['orWhere'] !== []
+            || $clauses['whereIn'] !== []
+            || $clauses['whereBetween'] !== []
+            || $clauses['whereNull'] !== []
+            || $clauses['whereNotNull'] !== []
+            || $clauses['has'] !== []
+            || $clauses['whereHas'] !== []
+            || $clauses['orWhereHas'] !== []
+            || $clauses['whereDoesntHave'] !== []
+            || $clauses['orWhereDoesntHave'] !== [];
+    }
+
+    /**
+     * Apply named filters on the outer builder, then wrap boolean / relation
+     * filters so orWhere / orWhereHas cannot escape repository criteria.
+     *
+     * @param  Builder<*>  $query
+     * @param  QueryClauses  $clauses
+     * @param  callable(string, mixed): mixed  $filterValueResolver
+     *
+     * @throws InvalidRequestQueryException
+     * @throws InvalidArgumentException
+     */
+    private function applyGroupedRequestFilterClauses(
+        Builder $query,
+        array $clauses,
+        callable $filterValueResolver,
+    ): void {
+        $this->applyNamedFilterClauses($query, $clauses['filters']);
+
+        if (! $this->hasGroupedRequestFilterClauses($clauses)) {
+            return;
+        }
+
+        $query->where(function (Builder $group) use ($clauses, $filterValueResolver): void {
+            $this->applyWhereClauses($group, $clauses['where'], null, $filterValueResolver);
+            $this->applyOrWhereClauses($group, $clauses['orWhere'], null, $filterValueResolver);
+            $this->applyWhereInClauses($group, $clauses['whereIn'], null, $filterValueResolver);
+            $this->applyWhereBetweenClauses($group, $clauses['whereBetween'], null, $filterValueResolver);
+            $this->applyWhereNullClauses($group, $clauses['whereNull']);
+            $this->applyWhereNotNullClauses($group, $clauses['whereNotNull']);
+            $this->applyHasClauses($group, $clauses['has']);
+            $this->applyWhereHasClauses($group, $clauses['whereHas']);
+            $this->applyOrWhereHasClauses($group, $clauses['orWhereHas']);
+            $this->applyWhereDoesntHaveClauses($group, $clauses['whereDoesntHave']);
+            $this->applyOrWhereDoesntHaveClauses($group, $clauses['orWhereDoesntHave']);
+        });
+    }
+
+    /**
+     * Always append a unique primary-key order when the PK column is not already
+     * present, so duplicate sort values still paginate across all pages.
+     *
+     * @param  Builder<*>  $query
+     *
+     * @throws InvalidArgumentException
+     */
+    private function ensureRequestCursorPaginationOrder(Builder $query): void
+    {
+        $model = $this->getModel();
+        $keyName = $model->getKeyName();
+        $qualifiedKey = $model->qualifyColumn($keyName);
+        $orders = $query->getQuery()->orders ?? [];
+
+        foreach ($orders as $order) {
+            if (! is_array($order)) {
+                continue;
+            }
+
+            $column = $order['column'] ?? null;
+            if (! is_string($column)) {
+                continue;
+            }
+
+            if ($column === $qualifiedKey || $column === $keyName) {
+                return;
+            }
+        }
+
+        $query->getQuery()->orderBy($qualifiedKey, 'asc');
+    }
+
+    /**
+     * When a sparse field projection is active, retain order/cursor columns and
+     * the qualified primary key without dropping Expression selections
+     * (e.g. withCount subselects) or their select bindings.
+     *
+     * @param  Builder<*>  $query
+     */
+    private function ensureRequestCursorOrderColumnsSelected(Builder $query): void
+    {
+        $base = $query->getQuery();
+        $columns = $base->columns;
+        if ($columns === null || $columns === [] || in_array('*', $columns, true)) {
+            return;
+        }
+
+        $selectBindings = $base->bindings['select'] ?? [];
+        $selected = array_values($columns);
+
+        foreach ($base->orders ?? [] as $order) {
+            if (! is_array($order)) {
+                continue;
+            }
+
+            $column = $order['column'] ?? null;
+            if (! is_string($column) || $column === '') {
+                continue;
+            }
+
+            if (! in_array($column, $selected, true)) {
+                $selected[] = $column;
+            }
+        }
+
+        $model = $this->getModel();
+        $keyName = $model->getKeyName();
+        $qualifiedKey = $model->qualifyColumn($keyName);
+        $selected = array_values(array_filter(
+            $selected,
+            static fn(mixed $column): bool => $column !== $keyName,
+        ));
+
+        if (! in_array($qualifiedKey, $selected, true)) {
+            $selected[] = $qualifiedKey;
+        }
+
+        $base->columns = $selected;
+        $base->bindings['select'] = $selectBindings;
+    }
+
+    /**
      * @return array<string, mixed>
+     *
+     * @throws InvalidRequestQueryException
      */
     private function requestQueryData(Request $request): array
     {
@@ -143,11 +334,20 @@ trait HasRequestQuery
             return [];
         }
 
-        return $data;
+        $normalized = [];
+        foreach ($data as $key => $value) {
+            if (is_string($key)) {
+                $normalized[$key] = $value;
+            }
+        }
+
+        return $normalized;
     }
 
     /**
      * @param  array<string, mixed>  $data
+     *
+     * @throws InvalidRequestQueryException
      */
     private function assertSupportedRequestQuery(array $data): void
     {
@@ -172,6 +372,8 @@ trait HasRequestQuery
 
     /**
      * @param  QueryClauses  $clauses
+     *
+     * @throws InvalidRequestQueryException
      */
     private function assertSupportedRequestOperators(array $clauses): void
     {
@@ -200,6 +402,8 @@ trait HasRequestQuery
      * @param  Builder<*>  $query
      * @param  list<string>  $clauses
      * @param  list<string>  $includes
+     *
+     * @throws InvalidRequestQueryException
      */
     private function applyFieldClauses(Builder $query, array $clauses, array $includes = []): void
     {
@@ -229,7 +433,7 @@ trait HasRequestQuery
 
         $selected = $this->preserveOwnerKeysForIncludes($model, $selected, $includes);
 
-        $query->select(array_values(array_unique($selected)));
+        $query->getQuery()->select(array_values(array_unique($selected)));
     }
 
     /**
@@ -244,6 +448,8 @@ trait HasRequestQuery
      * @param  list<string>  $selected
      * @param  list<string>  $includes
      * @return list<string>
+     *
+     * @throws InvalidRequestQueryException
      */
     private function preserveOwnerKeysForIncludes(Model $model, array $selected, array $includes): array
     {
@@ -251,31 +457,7 @@ trait HasRequestQuery
             return $selected;
         }
 
-        $ownerKeys = [];
-
-        foreach ($includes as $requestedInclude) {
-            $include = $this->resolveIncludeRequest($requestedInclude);
-            if ($include === null || $include['type'] !== 'relation') {
-                continue;
-            }
-
-            $rootRelation = Str::before($include['relation'], '.');
-            if ($rootRelation === '' || ! $this->relationExists($rootRelation)) {
-                continue;
-            }
-
-            $relation = $model->{$rootRelation}();
-            if ($relation instanceof BelongsTo) {
-                $ownerKeys[] = $model->qualifyColumn($relation->getForeignKeyName());
-            }
-
-            if ($relation instanceof MorphTo) {
-                $ownerKeys[] = $model->qualifyColumn($relation->getForeignKeyName());
-                $ownerKeys[] = $model->qualifyColumn($relation->getMorphType());
-            }
-        }
-
-        foreach ($ownerKeys as $column) {
+        foreach ($this->ownerKeysForIncludes($model, $includes) as $column) {
             if (! in_array($column, $selected, true)) {
                 $selected[] = $column;
             }
@@ -285,8 +467,71 @@ trait HasRequestQuery
     }
 
     /**
+     * @param  list<string>  $includes
+     * @return list<string>
+     *
+     * @throws InvalidRequestQueryException
+     */
+    private function ownerKeysForIncludes(Model $model, array $includes): array
+    {
+        $ownerKeys = [];
+
+        foreach ($includes as $requestedInclude) {
+            foreach ($this->ownerKeysForInclude($model, $requestedInclude) as $column) {
+                $ownerKeys[] = $column;
+            }
+        }
+
+        return array_values(array_unique($ownerKeys));
+    }
+
+    /**
+     * @return list<string>
+     *
+     * @throws InvalidRequestQueryException
+     */
+    private function ownerKeysForInclude(Model $model, string $requestedInclude): array
+    {
+        $include = $this->resolveIncludeRequest($requestedInclude);
+        if ($include === null || $include['type'] !== 'relation') {
+            return [];
+        }
+
+        $rootRelation = Str::before($include['relation'], '.');
+        if (
+            $rootRelation === ''
+            || ! method_exists($model, $rootRelation)
+            || ! $this->relationExists($rootRelation)
+        ) {
+            return [];
+        }
+
+        $relationCaller = [$model, $rootRelation];
+        if (! is_callable($relationCaller)) {
+            return [];
+        }
+
+        $relation = $relationCaller();
+        if ($relation instanceof MorphTo) {
+            return [
+                $model->qualifyColumn($relation->getForeignKeyName()),
+                $model->qualifyColumn($relation->getMorphType()),
+            ];
+        }
+
+        if ($relation instanceof BelongsTo) {
+            return [$model->qualifyColumn($relation->getForeignKeyName())];
+        }
+
+        return [];
+    }
+
+    /**
      * @param  Builder<*>  $query
      * @param  array<string, mixed>  $clauses
+     *
+     * @throws InvalidRequestQueryException
+     * @throws InvalidArgumentException
      */
     private function applyNamedFilterClauses(Builder $query, array $clauses): void
     {
@@ -297,15 +542,195 @@ trait HasRequestQuery
             }
 
             $value = $this->normalizeNamedFilterValue($name, $value);
-
-            if ($filter instanceof RequestFilterInterface) {
-                $filter->apply($query, $value);
-
+            if ($value instanceof SkippedRequestValue) {
                 continue;
             }
 
-            $filter($query, $value);
+            $this->applyNamedFilterIsolated($query, $filter, $value);
         }
+    }
+
+    /**
+     * Run a named filter on an isolated builder so orWhere cannot escape
+     * repository criteria, then promote non-boolean query state (joins, select,
+     * order, limit, group, …) to the outer query.
+     *
+     * @param  Builder<*>  $query
+     * @param  RequestFilterInterface|(callable(Builder<*>, mixed): void)  $filter
+     *
+     * @throws InvalidArgumentException
+     */
+    private function applyNamedFilterIsolated(Builder $query, mixed $filter, mixed $value): void
+    {
+        $nested = $query->getModel()->newQueryWithoutRelationships();
+
+        if ($filter instanceof RequestFilterInterface) {
+            $filter->apply($nested, $value);
+        } else {
+            $filter($nested, $value);
+        }
+
+        $this->promoteNamedFilterQueryState($query, $nested);
+        $query->getQuery()->addNestedWhereQuery($nested->getQuery(), 'and');
+    }
+
+    /**
+     * @param  Builder<*>  $outer
+     * @param  Builder<*>  $nested
+     *
+     * @throws InvalidArgumentException
+     */
+    private function promoteNamedFilterQueryState(Builder $outer, Builder $nested): void
+    {
+        $nestedBase = $nested->getQuery();
+        $outerBase = $outer->getQuery();
+
+        $this->promoteNamedFilterJoins($outerBase, $nestedBase);
+        $this->promoteNamedFilterColumns($outerBase, $nestedBase);
+        $this->promoteNamedFilterOrders($outerBase, $nestedBase);
+        $this->promoteNamedFilterGroups($outerBase, $nestedBase);
+        $this->promoteNamedFilterHavings($outerBase, $nestedBase);
+
+        if ($nestedBase->distinct === true || is_array($nestedBase->distinct)) {
+            $outerBase->distinct = $nestedBase->distinct;
+        }
+
+        if ($nestedBase->limit !== null) {
+            $outerBase->limit = $nestedBase->limit;
+        }
+
+        if ($nestedBase->offset !== null) {
+            $outerBase->offset = $nestedBase->offset;
+        }
+    }
+
+    /**
+     * @param  QueryBuilder  $outerBase
+     * @param  QueryBuilder  $nestedBase
+     *
+     * @throws InvalidArgumentException
+     */
+    private function promoteNamedFilterJoins(QueryBuilder $outerBase, QueryBuilder $nestedBase): void
+    {
+        $joins = $nestedBase->joins ?? [];
+
+        if ($joins === []) {
+            return;
+        }
+
+        $outerBase->joins = array_values([
+            ...($outerBase->joins ?? []),
+            ...$joins,
+        ]);
+
+        foreach ($nestedBase->bindings['join'] ?? [] as $binding) {
+            $outerBase->addBinding($binding, 'join');
+        }
+
+        $nestedBase->joins = null;
+        $nestedBase->bindings['join'] = [];
+    }
+
+    /**
+     * @param  QueryBuilder  $outerBase
+     * @param  QueryBuilder  $nestedBase
+     *
+     * @throws InvalidArgumentException
+     */
+    private function promoteNamedFilterColumns(QueryBuilder $outerBase, QueryBuilder $nestedBase): void
+    {
+        $columns = $nestedBase->columns;
+
+        if ($columns === null || $columns === []) {
+            return;
+        }
+
+        $outerColumns = $outerBase->columns;
+        if ($outerColumns === null || $outerColumns === [] || in_array('*', $outerColumns, true)) {
+            $outerBase->columns = array_values($columns);
+        } else {
+            $outerBase->columns = array_values([...$outerColumns, ...$columns]);
+        }
+
+        foreach ($nestedBase->bindings['select'] ?? [] as $binding) {
+            $outerBase->addBinding($binding, 'select');
+        }
+
+        $nestedBase->columns = null;
+        $nestedBase->bindings['select'] = [];
+    }
+
+    /**
+     * @param  QueryBuilder  $outerBase
+     * @param  QueryBuilder  $nestedBase
+     *
+     * @throws InvalidArgumentException
+     */
+    private function promoteNamedFilterOrders(QueryBuilder $outerBase, QueryBuilder $nestedBase): void
+    {
+        $orders = $nestedBase->orders ?? [];
+
+        if ($orders === []) {
+            return;
+        }
+
+        $outerBase->orders = array_values([
+            ...($outerBase->orders ?? []),
+            ...$orders,
+        ]);
+
+        foreach ($nestedBase->bindings['order'] ?? [] as $binding) {
+            $outerBase->addBinding($binding, 'order');
+        }
+
+        $nestedBase->orders = null;
+        $nestedBase->bindings['order'] = [];
+    }
+
+    /**
+     * @param  QueryBuilder  $outerBase
+     * @param  QueryBuilder  $nestedBase
+     */
+    private function promoteNamedFilterGroups(QueryBuilder $outerBase, QueryBuilder $nestedBase): void
+    {
+        $groups = $nestedBase->groups ?? [];
+
+        if ($groups === []) {
+            return;
+        }
+
+        $outerBase->groups = array_values([
+            ...($outerBase->groups ?? []),
+            ...$groups,
+        ]);
+        $nestedBase->groups = null;
+    }
+
+    /**
+     * @param  QueryBuilder  $outerBase
+     * @param  QueryBuilder  $nestedBase
+     *
+     * @throws InvalidArgumentException
+     */
+    private function promoteNamedFilterHavings(QueryBuilder $outerBase, QueryBuilder $nestedBase): void
+    {
+        $havings = $nestedBase->havings ?? [];
+
+        if ($havings === []) {
+            return;
+        }
+
+        $outerBase->havings = array_values([
+            ...($outerBase->havings ?? []),
+            ...$havings,
+        ]);
+
+        foreach ($nestedBase->bindings['having'] ?? [] as $binding) {
+            $outerBase->addBinding($binding, 'having');
+        }
+
+        $nestedBase->havings = null;
+        $nestedBase->bindings['having'] = [];
     }
 
     /**
@@ -313,6 +738,8 @@ trait HasRequestQuery
      * @param  list<array{column: string, operator: string, value: mixed}>  $clauses
      * @param  (callable(string): bool)|null  $guard
      * @param  (callable(string, mixed): mixed)|null  $valueResolver
+     *
+     * @throws InvalidRequestQueryException
      */
     private function applyWhereClauses(
         Builder $query,
@@ -326,9 +753,13 @@ trait HasRequestQuery
                 continue;
             }
 
-            $value = $valueResolver
+            $value = $valueResolver !== null
                 ? $valueResolver($where['column'], $where['value'])
                 : $where['value'];
+
+            if ($value instanceof SkippedRequestValue) {
+                continue;
+            }
 
             QueryOperator::apply($query, 'where', $column, $where['operator'], $value);
         }
@@ -339,6 +770,8 @@ trait HasRequestQuery
      * @param  list<array{column: string, operator: string, value: mixed}>  $clauses
      * @param  (callable(string): bool)|null  $guard
      * @param  (callable(string, mixed): mixed)|null  $valueResolver
+     *
+     * @throws InvalidRequestQueryException
      */
     private function applyOrWhereClauses(
         Builder $query,
@@ -352,9 +785,13 @@ trait HasRequestQuery
                 continue;
             }
 
-            $value = $valueResolver
+            $value = $valueResolver !== null
                 ? $valueResolver($where['column'], $where['value'])
                 : $where['value'];
+
+            if ($value instanceof SkippedRequestValue) {
+                continue;
+            }
 
             QueryOperator::apply($query, 'orWhere', $column, $where['operator'], $value);
         }
@@ -365,6 +802,9 @@ trait HasRequestQuery
      * @param  list<array{column: string, values: list<mixed>}>  $clauses
      * @param  (callable(string): bool)|null  $guard
      * @param  (callable(string, mixed): mixed)|null  $valueResolver
+     *
+     * @throws InvalidRequestQueryException
+     * @throws InvalidArgumentException
      */
     private function applyWhereInClauses(
         Builder $query,
@@ -378,10 +818,15 @@ trait HasRequestQuery
                 continue;
             }
 
-            $values = $valueResolver
+            $values = $valueResolver !== null
                 ? $valueResolver($whereIn['column'], $whereIn['values'])
                 : $whereIn['values'];
-            $query->whereIn($column, is_array($values) ? $values : [$values]);
+
+            if ($values instanceof SkippedRequestValue) {
+                continue;
+            }
+
+            $query->getQuery()->whereIn($column, is_array($values) ? $values : [$values]);
         }
     }
 
@@ -390,6 +835,8 @@ trait HasRequestQuery
      * @param  list<array{column: string, range: list<mixed>}>  $clauses
      * @param  (callable(string): bool)|null  $guard
      * @param  (callable(string, mixed): mixed)|null  $valueResolver
+     *
+     * @throws InvalidRequestQueryException
      */
     private function applyWhereBetweenClauses(
         Builder $query,
@@ -403,13 +850,18 @@ trait HasRequestQuery
                 continue;
             }
 
-            $range = $valueResolver
+            $range = $valueResolver !== null
                 ? $valueResolver($whereBetween['column'], $whereBetween['range'])
                 : $whereBetween['range'];
+
+            if ($range instanceof SkippedRequestValue) {
+                continue;
+            }
+
             $range = is_array($range) ? array_values($range) : [];
 
             if (count($range) >= 2) {
-                $query->whereBetween($column, $range);
+                $query->getQuery()->whereBetween($column, $range);
             }
         }
     }
@@ -418,6 +870,8 @@ trait HasRequestQuery
      * @param  Builder<*>  $query
      * @param  list<string>  $clauses
      * @param  (callable(string): bool)|null  $guard
+     *
+     * @throws InvalidRequestQueryException
      */
     private function applyWhereNullClauses(Builder $query, array $clauses, ?callable $guard = null): void
     {
@@ -427,7 +881,7 @@ trait HasRequestQuery
                 continue;
             }
 
-            $query->whereNull($resolvedColumn);
+            $query->getQuery()->whereNull($resolvedColumn);
         }
     }
 
@@ -435,6 +889,8 @@ trait HasRequestQuery
      * @param  Builder<*>  $query
      * @param  list<string>  $clauses
      * @param  (callable(string): bool)|null  $guard
+     *
+     * @throws InvalidRequestQueryException
      */
     private function applyWhereNotNullClauses(Builder $query, array $clauses, ?callable $guard = null): void
     {
@@ -444,13 +900,15 @@ trait HasRequestQuery
                 continue;
             }
 
-            $query->whereNotNull($resolvedColumn);
+            $query->getQuery()->whereNotNull($resolvedColumn);
         }
     }
 
     /**
      * @param  Builder<*>  $query
      * @param  list<string>  $clauses
+     *
+     * @throws InvalidRequestQueryException
      */
     private function applyIncludeClauses(Builder $query, array $clauses): void
     {
@@ -470,22 +928,29 @@ trait HasRequestQuery
                 continue;
             }
 
-            match ($include['type']) {
-                'relation' => $query->with($relation),
-                'count' => $query->withCount([$relation.' as '.$include['attribute']]),
-                'exists' => $query->withExists([$relation.' as '.$include['attribute']]),
-                'sum' => $query->withSum($relation.' as '.$include['attribute'], $include['column']),
-                'avg' => $query->withAvg($relation.' as '.$include['attribute'], $include['column']),
-                'min' => $query->withMin($relation.' as '.$include['attribute'], $include['column']),
-                'max' => $query->withMax($relation.' as '.$include['attribute'], $include['column']),
-                default => throw new LogicException(sprintf('Unsupported include type [%s].', $include['type'])),
-            };
+            if ($include['type'] === 'relation') {
+                $query->with($relation);
+            } elseif ($include['type'] === 'count') {
+                $query->withCount([$relation . ' as ' . $include['attribute']]);
+            } elseif ($include['type'] === 'exists') {
+                $query->withExists([$relation . ' as ' . $include['attribute']]);
+            } elseif ($include['type'] === 'sum') {
+                $query->withSum($relation . ' as ' . $include['attribute'], $include['column']);
+            } elseif ($include['type'] === 'avg') {
+                $query->withAvg($relation . ' as ' . $include['attribute'], $include['column']);
+            } elseif ($include['type'] === 'min') {
+                $query->withMin($relation . ' as ' . $include['attribute'], $include['column']);
+            } else {
+                $query->withMax($relation . ' as ' . $include['attribute'], $include['column']);
+            }
         }
     }
 
     /**
      * @param  Builder<*>  $query
      * @param  list<array{name: string, parameters: list<mixed>}>  $clauses
+     *
+     * @throws InvalidRequestQueryException
      */
     private function applyScopeClauses(Builder $query, array $clauses): void
     {
@@ -504,13 +969,22 @@ trait HasRequestQuery
                 continue;
             }
 
-            $query->{Str::camel($definition['scope'])}(...$definition['parameters']);
+            /** @see Builder::__call */
+            $scopeCaller = [$query, Str::camel($definition['scope'])];
+            if (! is_callable($scopeCaller)) {
+                continue;
+            }
+
+            call_user_func_array($scopeCaller, $definition['parameters']);
         }
     }
 
     /**
      * @param  Builder<*>  $query
      * @param  list<array{relation: string, operator: string, count: int}>  $clauses
+     *
+     * @throws InvalidRequestQueryException
+     * @throws RuntimeException
      */
     private function applyHasClauses(Builder $query, array $clauses): void
     {
@@ -545,6 +1019,9 @@ trait HasRequestQuery
      *     whereNull: list<string>,
      *     whereNotNull: list<string>
      * }>  $clauses
+     *
+     * @throws InvalidRequestQueryException
+     * @throws RepositoryException
      */
     private function applyWhereHasClauses(Builder $query, array $clauses): void
     {
@@ -562,6 +1039,9 @@ trait HasRequestQuery
      *     whereNull: list<string>,
      *     whereNotNull: list<string>
      * }>  $clauses
+     *
+     * @throws InvalidRequestQueryException
+     * @throws RepositoryException
      */
     private function applyOrWhereHasClauses(Builder $query, array $clauses): void
     {
@@ -579,6 +1059,9 @@ trait HasRequestQuery
      *     whereNull: list<string>,
      *     whereNotNull: list<string>
      * }>  $clauses
+     *
+     * @throws InvalidRequestQueryException
+     * @throws RepositoryException
      */
     private function applyWhereDoesntHaveClauses(Builder $query, array $clauses): void
     {
@@ -596,6 +1079,9 @@ trait HasRequestQuery
      *     whereNull: list<string>,
      *     whereNotNull: list<string>
      * }>  $clauses
+     *
+     * @throws InvalidRequestQueryException
+     * @throws RepositoryException
      */
     private function applyOrWhereDoesntHaveClauses(Builder $query, array $clauses): void
     {
@@ -613,6 +1099,9 @@ trait HasRequestQuery
      *     whereNull: list<string>,
      *     whereNotNull: list<string>
      * }>  $clauses
+     *
+     * @throws InvalidRequestQueryException
+     * @throws RepositoryException
      */
     private function applyRelationClauses(Builder $query, array $clauses, string $method): void
     {
@@ -633,8 +1122,8 @@ trait HasRequestQuery
             }
 
             $callback = function (Builder $relationQuery) use ($clause, $relation, $requestedRelation): void {
-                $guard = fn (string $column): bool => $this->shouldApplyRelationColumn($relation, $column);
-                $valueResolver = fn (string $column, mixed $value): mixed => $this->normalizeRelationFilterValue(
+                $guard = fn(string $column): bool => $this->shouldApplyRelationColumn($relation, $column);
+                $valueResolver = fn(string $column, mixed $value): mixed => $this->normalizeRelationFilterValue(
                     $requestedRelation,
                     $column,
                     $value,
@@ -653,7 +1142,7 @@ trait HasRequestQuery
                 'orWhereHas' => $query->orWhereHas($relation, $callback),
                 'whereDoesntHave' => $query->whereDoesntHave($relation, $callback),
                 'orWhereDoesntHave' => $query->orWhereDoesntHave($relation, $callback),
-                default => throw new LogicException(sprintf('Unsupported relation clause method [%s].', $method)),
+                default => throw new RepositoryException(sprintf('Unsupported relation clause method [%s].', $method)),
             };
         }
     }
@@ -661,6 +1150,9 @@ trait HasRequestQuery
     /**
      * @param  Builder<*>  $query
      * @param  list<array{column: string, direction: string}>  $clauses
+     *
+     * @throws InvalidRequestQueryException
+     * @throws InvalidArgumentException
      */
     private function applyOrderClauses(Builder $query, array $clauses): void
     {
@@ -669,10 +1161,14 @@ trait HasRequestQuery
                 continue;
             }
 
-            $query->orderBy($order['column'], $order['direction']);
+            $direction = strtolower(trim($order['direction'])) === 'desc' ? 'desc' : 'asc';
+            $query->getQuery()->orderBy($order['column'], $direction);
         }
     }
 
+    /**
+     * @throws InvalidRequestQueryException
+     */
     private function shouldApplyFilter(string $column): bool
     {
         return $this->guardAllowedValue(
@@ -684,6 +1180,9 @@ trait HasRequestQuery
         );
     }
 
+    /**
+     * @throws InvalidRequestQueryException
+     */
     private function shouldApplySort(string $column): bool
     {
         return $this->guardAllowedValue(
@@ -695,6 +1194,9 @@ trait HasRequestQuery
         );
     }
 
+    /**
+     * @throws InvalidRequestQueryException
+     */
     private function shouldApplyInclude(string $relation): bool
     {
         return $this->guardAllowedValue(
@@ -706,6 +1208,9 @@ trait HasRequestQuery
         );
     }
 
+    /**
+     * @throws InvalidRequestQueryException
+     */
     private function shouldApplyField(string $field): bool
     {
         return $this->guardAllowedValue(
@@ -720,6 +1225,8 @@ trait HasRequestQuery
     /**
      * @param  list<string>|null  $allowed
      * @param  callable(string, list<string>): InvalidRequestQueryException  $exceptionFactory
+     *
+     * @throws InvalidRequestQueryException
      */
     private function guardAllowedValue(string $value, ?array $allowed, callable $exceptionFactory): bool
     {
@@ -810,6 +1317,9 @@ trait HasRequestQuery
         return $this->allowedRelationFilters();
     }
 
+    /**
+     * @throws InvalidRequestQueryException
+     */
     private function shouldApplyScope(string $scope): bool
     {
         return $this->guardAllowedValue(
@@ -821,6 +1331,9 @@ trait HasRequestQuery
         );
     }
 
+    /**
+     * @throws InvalidRequestQueryException
+     */
     private function shouldApplyRelationFilter(string $relation): bool
     {
         $allowed = $this->requestQueryVisibleRelationFilters();
@@ -839,6 +1352,9 @@ trait HasRequestQuery
         return false;
     }
 
+    /**
+     * @throws InvalidRequestQueryException
+     */
     private function shouldApplyRelationCount(string $relation): bool
     {
         $allowed = $this->requestQueryVisibleRelationCounts();
@@ -857,6 +1373,9 @@ trait HasRequestQuery
         return false;
     }
 
+    /**
+     * @throws InvalidRequestQueryException
+     */
     private function shouldApplyRelationColumn(string $relation, string $column): bool
     {
         $allowed = $this->requestQueryAllowedRelationFilters();
@@ -878,8 +1397,10 @@ trait HasRequestQuery
 
     /**
      * @return RequestFilterInterface|Closure(Builder<*>, mixed): void|null
+     *
+     * @throws InvalidRequestQueryException
      */
-    private function resolveRequestFilter(string $name): RequestFilterInterface|Closure|null
+    private function resolveRequestFilter(string $name): RequestFilterInterface | Closure | null
     {
         $resolvedFilter = null;
 
@@ -911,6 +1432,8 @@ trait HasRequestQuery
 
     /**
      * @param  (callable(string): bool)|null  $guard
+     *
+     * @throws InvalidRequestQueryException
      */
     private function resolveRequestedFilterColumn(string $column, ?callable $guard): ?string
     {
@@ -927,12 +1450,35 @@ trait HasRequestQuery
 
     private function scopeExists(string $scope): bool
     {
-        return method_exists($this->getModel(), 'scope'.Str::studly($scope));
+        $model = $this->getModel();
+
+        if (method_exists($model, 'scope' . Str::studly($scope))) {
+            return true;
+        }
+
+        $attributeMethod = Str::camel($scope);
+        if (! method_exists($model, $attributeMethod)) {
+            return false;
+        }
+
+        try {
+            $method = new ReflectionMethod($model, $attributeMethod);
+        } catch (ReflectionException) {
+            return false;
+        }
+
+        if ($method->isPrivate()) {
+            return false;
+        }
+
+        return $method->getAttributes(ScopeAttribute::class) !== [];
     }
 
     /**
      * @param  list<mixed>  $parameters
      * @return array{scope: string, parameters: list<mixed>}|null
+     *
+     * @throws InvalidRequestQueryException
      */
     private function resolveScopeClause(string $scope, array $parameters): ?array
     {
@@ -963,7 +1509,12 @@ trait HasRequestQuery
     }
 
     /**
-     * @return array{type: string, relation: string, attribute: string, column?: string}|null
+     * @return (
+     *     array{type: 'relation'|'count'|'exists', relation: string, attribute: string}|
+     *     array{type: 'sum'|'avg'|'min'|'max', relation: string, attribute: string, column: string}
+     * )|null
+     *
+     * @throws InvalidRequestQueryException
      */
     private function resolveIncludeRequest(string $relation): ?array
     {
@@ -981,25 +1532,30 @@ trait HasRequestQuery
             ];
         }
 
-        $type = 'relation';
-        $base = $relation;
-
         if (Str::endsWith($relation, 'Count')) {
-            $type = 'count';
             $base = Str::beforeLast($relation, 'Count');
-        } elseif (Str::endsWith($relation, 'Exists')) {
-            $type = 'exists';
+
+            return [
+                'type' => 'count',
+                'relation' => $this->resolveRelationAlias($base),
+                'attribute' => Str::snake($base) . '_count',
+            ];
+        }
+
+        if (Str::endsWith($relation, 'Exists')) {
             $base = Str::beforeLast($relation, 'Exists');
+
+            return [
+                'type' => 'exists',
+                'relation' => $this->resolveRelationAlias($base),
+                'attribute' => Str::snake($base) . '_exists',
+            ];
         }
 
         return [
-            'type' => $type,
-            'relation' => $this->resolveRelationAlias($base),
-            'attribute' => match ($type) {
-                'count' => Str::snake($base).'_count',
-                'exists' => Str::snake($base).'_exists',
-                default => '',
-            },
+            'type' => 'relation',
+            'relation' => $this->resolveRelationAlias($relation),
+            'attribute' => '',
         ];
     }
 
@@ -1050,7 +1606,12 @@ trait HasRequestQuery
     }
 
     /**
-     * @return array<string, array{relation: string, column: string, function: string, attribute: string}>
+     * @return array<string, array{
+     *     relation: string,
+     *     column: string,
+     *     function: 'sum'|'avg'|'min'|'max',
+     *     attribute: string
+     * }>
      */
     private function requestQueryAggregateIncludes(): array
     {
@@ -1122,7 +1683,7 @@ trait HasRequestQuery
 
         return array_values(array_unique(array_filter(
             $visible,
-            static fn (string $name): bool => ! in_array($name, $aliasedTargets, true),
+            static fn(string $name): bool => ! in_array($name, $aliasedTargets, true),
         )));
     }
 
@@ -1142,8 +1703,8 @@ trait HasRequestQuery
 
         $derived = [];
         foreach ($visible as $relation) {
-            $derived[] = $relation.'Count';
-            $derived[] = $relation.'Exists';
+            $derived[] = $relation . 'Count';
+            $derived[] = $relation . 'Exists';
         }
 
         foreach ($this->requestQueryAggregateIncludes() as $requestName => $definition) {
@@ -1219,20 +1780,38 @@ trait HasRequestQuery
 
         return array_values(array_unique(array_filter(
             $visible,
-            static fn (string $name): bool => ! in_array($name, $aliasedTargets, true),
+            static fn(string $name): bool => ! in_array($name, $aliasedTargets, true),
         )));
     }
 
     private function relationExists(string $relation): bool
     {
         $model = $this->getModel();
+        $path = '';
 
         foreach (explode('.', $relation) as $segment) {
+            $path = $path === '' ? $segment : $path . '.' . $segment;
+
             if (! method_exists($model, $segment)) {
                 return false;
             }
 
-            $relationObject = $model->{$segment}();
+            try {
+                $method = new ReflectionMethod($model, $segment);
+            } catch (ReflectionException) {
+                return false;
+            }
+
+            if (! $this->isSafeRelationMethod($method, $path)) {
+                return false;
+            }
+
+            $relationCaller = [$model, $segment];
+            if (! is_callable($relationCaller)) {
+                return false;
+            }
+
+            $relationObject = $relationCaller();
             if (! $relationObject instanceof Relation) {
                 return false;
             }
@@ -1243,22 +1822,136 @@ trait HasRequestQuery
         return true;
     }
 
+    /**
+     * Relation methods must declare a Relation return type, unless the path is
+     * explicitly trusted via allowlisted includes, relation-filter keys, or
+     * {@see HasAllowedRequestQuery::$trustedRelations}. Untyped methods are
+     * never accepted when allowlists are unrestricted (`null`).
+     */
+    private function isSafeRelationMethod(ReflectionMethod $method, string $relationPath): bool
+    {
+        if (! $method->isPublic() || $method->getNumberOfRequiredParameters() > 0) {
+            return false;
+        }
+
+        $returnType = $method->getReturnType();
+        if ($returnType === null) {
+            return $this->isTrustedUntypedRelation($relationPath);
+        }
+
+        return $this->returnTypeContainsRelation($returnType);
+    }
+
+    private function isTrustedUntypedRelation(string $relationPath): bool
+    {
+        foreach ($this->trustedRelationPaths() as $trusted) {
+            if ($this->relationPathCovers($trusted, $relationPath)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function trustedRelationPaths(): array
+    {
+        $paths = [];
+
+        if (property_exists($this, 'trustedRelations') && is_array($this->trustedRelations)) {
+            foreach ($this->trustedRelations as $relation) {
+                if (is_string($relation) && $relation !== '') {
+                    $paths[] = $relation;
+                }
+            }
+        }
+
+        if (! $this instanceof AllowsRequestQueryInterface) {
+            return array_values(array_unique($paths));
+        }
+
+        $includes = $this->allowedIncludes();
+        if ($includes !== null) {
+            foreach ($includes as $include) {
+                $paths[] = $this->relationPathFromInclude($include);
+            }
+        }
+
+        $relationFilters = $this->allowedRelationFilters();
+        if ($relationFilters !== null) {
+            foreach (array_keys($relationFilters) as $relation) {
+                $paths[] = $relation;
+            }
+        }
+
+        return array_values(array_unique($paths));
+    }
+
+    private function relationPathFromInclude(string $include): string
+    {
+        foreach (['Count', 'Exists', 'Sum', 'Avg', 'Min', 'Max'] as $suffix) {
+            if (str_ends_with($include, $suffix) && $include !== $suffix) {
+                return substr($include, 0, -strlen($suffix));
+            }
+        }
+
+        return $include;
+    }
+
+    private function relationPathCovers(string $trusted, string $relationPath): bool
+    {
+        // Exact trust, or an ancestor segment while walking a longer trusted path
+        // (e.g. trusted "posts.comments" while validating "posts"). Descendants of
+        // a short trust (e.g. "peers.auditEffect" under "peers") are not authorized.
+        return $trusted === $relationPath
+            || str_starts_with($trusted, $relationPath . '.');
+    }
+
+    private function returnTypeContainsRelation(ReflectionType $type): bool
+    {
+        if ($type instanceof ReflectionNamedType) {
+            if ($type->isBuiltin()) {
+                return false;
+            }
+
+            $name = $type->getName();
+
+            return $name === Relation::class || is_a($name, Relation::class, true);
+        }
+
+        if ($type instanceof ReflectionUnionType || $type instanceof ReflectionIntersectionType) {
+            foreach ($type->getTypes() as $inner) {
+                if ($this->returnTypeContainsRelation($inner)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     private function requestQueryStrictMode(): bool
     {
         return $this instanceof AllowsRequestQueryInterface && $this->isRequestQueryStrict();
     }
 
+    /**
+     * @throws InvalidRequestQueryException
+     */
     private function requestPerPage(Request $request, string $key): int
     {
-        $default = max(1, (int) config('laravel-repository.default_per_page', 15));
-        $max = max(1, (int) config('laravel-repository.max_per_page', 100));
+        $default = max(1, $this->configInt('laravel-repository.default_per_page', 15));
+        $max = max(1, $this->configInt('laravel-repository.max_per_page', 100));
         $value = $request->input($key);
 
         if ($value === null || $value === '') {
             return min($default, $max);
         }
 
-        if (filter_var($value, FILTER_VALIDATE_INT) === false || (int) $value < 1) {
+        $validated = filter_var($value, FILTER_VALIDATE_INT);
+        if ($validated === false || $validated < 1) {
             if ($this->requestQueryStrictMode()) {
                 throw new InvalidRequestQueryException(sprintf(
                     'Request query per-page value [%s] must be an integer greater than or equal to 1.',
@@ -1269,7 +1962,7 @@ trait HasRequestQuery
             return min($default, $max);
         }
 
-        $perPage = (int) $value;
+        $perPage = $validated;
         if ($perPage > $max) {
             if ($this->requestQueryStrictMode()) {
                 throw new InvalidRequestQueryException(sprintf(
@@ -1283,6 +1976,20 @@ trait HasRequestQuery
         }
 
         return $perPage;
+    }
+
+    private function configInt(string $key, int $default): int
+    {
+        $value = config($key, $default);
+        if (is_int($value)) {
+            return $value;
+        }
+
+        if (is_string($value) && is_numeric($value)) {
+            return (int) $value;
+        }
+
+        return $default;
     }
 
     private function normalizeFilterValue(string $column, mixed $value): mixed
@@ -1311,7 +2018,7 @@ trait HasRequestQuery
         }
 
         return array_map(
-            static fn (mixed $parameter): mixed => RequestQueryValueNormalizer::normalize($parameter, $rules),
+            static fn(mixed $parameter): mixed => RequestQueryValueNormalizer::normalize($parameter, $rules),
             $parameters,
         );
     }

@@ -6,6 +6,7 @@ namespace JOOservices\LaravelRepository\Traits;
 
 use Illuminate\Database\Eloquent\Builder;
 use JOOservices\LaravelRepository\Contracts\CriteriaInterface;
+use WeakMap;
 
 /**
  * @phpstan-require-extends \JOOservices\LaravelRepository\Repositories\EloquentRepository
@@ -17,7 +18,13 @@ trait HasCriteria
      */
     protected array $criteria = [];
 
-    private ?int $criteriaQueryId = null;
+    /**
+     * Builders that already had criteria applied. WeakMap avoids spl_object_id
+     * reuse after garbage collection skipping criteria on a new builder.
+     *
+     * @var WeakMap<Builder<*>, true>|null
+     */
+    private ?WeakMap $criteriaMap = null;
 
     public function pushCriteria(CriteriaInterface $criteria): static
     {
@@ -25,7 +32,7 @@ trait HasCriteria
 
         if ($this->query !== null) {
             $criteria->apply($this->query);
-            $this->criteriaQueryId = spl_object_id($this->query);
+            $this->criteriaMap()->offsetSet($this->query, true);
         }
 
         return $this;
@@ -35,7 +42,7 @@ trait HasCriteria
     {
         $criteria = array_pop($this->criteria);
         $this->query = null;
-        $this->criteriaQueryId = null;
+        $this->criteriaMap = new WeakMap();
 
         return $criteria;
     }
@@ -44,7 +51,7 @@ trait HasCriteria
     {
         $this->criteria = [];
         $this->query = null;
-        $this->criteriaQueryId = null;
+        $this->criteriaMap = new WeakMap();
 
         return $this;
     }
@@ -66,8 +73,8 @@ trait HasCriteria
             return;
         }
 
-        $queryId = spl_object_id($query);
-        if ($this->criteriaQueryId === $queryId) {
+        $applied = $this->criteriaMap();
+        if ($applied->offsetExists($query)) {
             return;
         }
 
@@ -75,6 +82,14 @@ trait HasCriteria
             $criteria->apply($query);
         }
 
-        $this->criteriaQueryId = $queryId;
+        $applied->offsetSet($query, true);
+    }
+
+    /**
+     * @return WeakMap<Builder<*>, true>
+     */
+    private function criteriaMap(): WeakMap
+    {
+        return $this->criteriaMap ??= new WeakMap();
     }
 }

@@ -20,7 +20,7 @@ class HasFilterTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->repo = new UserRepositoryStub(new UserStub);
+        $this->repo = new UserRepositoryStub(new UserStub());
     }
 
     #[Test]

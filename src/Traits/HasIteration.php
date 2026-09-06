@@ -8,6 +8,7 @@ use Closure;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\LazyCollection;
+use InvalidArgumentException;
 
 trait HasIteration
 {
@@ -25,6 +26,8 @@ trait HasIteration
 
     /**
      * @return LazyCollection<int, Model>
+     *
+     * @throws InvalidArgumentException
      */
     public function lazy(int $chunkSize = 1000): LazyCollection
     {
@@ -49,6 +52,8 @@ trait HasIteration
 
     /**
      * @return LazyCollection<int, Model>
+     *
+     * @throws InvalidArgumentException
      */
     public function lazyById(int $chunkSize = 1000, ?string $column = null, ?string $alias = null): LazyCollection
     {
@@ -61,6 +66,8 @@ trait HasIteration
 
     /**
      * @return LazyCollection<int, Model>
+     *
+     * @throws InvalidArgumentException
      */
     public function lazyByIdDesc(int $chunkSize = 1000, ?string $column = null, ?string $alias = null): LazyCollection
     {

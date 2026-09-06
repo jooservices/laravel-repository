@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace JOOservices\LaravelRepository\Exceptions;
 
-class InvalidRequestQueryException extends RepositoryException
+final class InvalidRequestQueryException extends RepositoryException
 {
     /**
      * @param  list<string>  $allowed

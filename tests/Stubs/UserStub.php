@@ -13,7 +13,7 @@ class UserStub extends Model
 {
     protected $table = 'users';
 
-    protected $fillable = ['name', 'email', 'status'];
+    protected $fillable = ['name', 'email', 'status', 'score'];
 
     public $timestamps = true;
 
@@ -30,7 +30,7 @@ class UserStub extends Model
      */
     public function scopeEmailDomain(Builder $query, string $domain): void
     {
-        $query->where('email', 'like', '%@'.$domain);
+        $query->where('email', 'like', '%@' . $domain);
     }
 
     /**

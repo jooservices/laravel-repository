@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace JOOservices\LaravelRepository\Tests\Unit;
 
 use JOOservices\LaravelRepository\Support\RequestQueryValueNormalizer;
+use JOOservices\LaravelRepository\Support\SkippedRequestValue;
 use JOOservices\LaravelRepository\Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 
@@ -62,5 +63,65 @@ class RequestQueryValueNormalizerTest extends TestCase
         );
 
         $this->assertSame(['A', 'B'], $normalized);
+    }
+
+    #[Test]
+    public function ignore_rule_returns_skipped_sentinel_for_wildcard_values(): void
+    {
+        $skipped = RequestQueryValueNormalizer::normalize('*', ['ignore']);
+        $this->assertInstanceOf(SkippedRequestValue::class, $skipped);
+        $this->assertSame(SkippedRequestValue::instance(), $skipped);
+
+        $this->assertInstanceOf(
+            SkippedRequestValue::class,
+            RequestQueryValueNormalizer::normalize('all', [['rule' => 'ignore']]),
+        );
+        $this->assertInstanceOf(
+            SkippedRequestValue::class,
+            RequestQueryValueNormalizer::normalize('', ['ignore']),
+        );
+        $this->assertSame(
+            'active',
+            RequestQueryValueNormalizer::normalize('active', ['ignore']),
+        );
+        $this->assertInstanceOf(
+            SkippedRequestValue::class,
+            RequestQueryValueNormalizer::normalize('any', [['rule' => 'ignore', 'values' => ['any', 'n/a']]]),
+        );
+    }
+
+    #[Test]
+    public function default_rule_fills_empty_values(): void
+    {
+        $this->assertSame(
+            'fallback',
+            RequestQueryValueNormalizer::normalize(null, [['rule' => 'default', 'value' => 'fallback']]),
+        );
+        $this->assertSame(
+            'fallback',
+            RequestQueryValueNormalizer::normalize('  ', [['rule' => 'default', 'value' => 'fallback']]),
+        );
+        $this->assertSame(
+            'fallback',
+            RequestQueryValueNormalizer::normalize([], [['rule' => 'default', 'value' => 'fallback']]),
+        );
+        $this->assertSame(
+            'kept',
+            RequestQueryValueNormalizer::normalize('kept', [['rule' => 'default', 'value' => 'fallback']]),
+        );
+        $this->assertSame(
+            null,
+            RequestQueryValueNormalizer::normalize(null, ['default']),
+        );
+    }
+
+    #[Test]
+    public function nullable_rule_nulls_empty_values(): void
+    {
+        $this->assertNull(RequestQueryValueNormalizer::normalize('', ['nullable']));
+        $this->assertNull(RequestQueryValueNormalizer::normalize('   ', ['nullable']));
+        $this->assertNull(RequestQueryValueNormalizer::normalize([], ['nullable']));
+        $this->assertSame('value', RequestQueryValueNormalizer::normalize('value', ['nullable']));
+        $this->assertSame(0, RequestQueryValueNormalizer::normalize(0, ['nullable']));
     }
 }
