@@ -36,6 +36,14 @@ trait HasAllowedRequestQuery
      */
     protected ?array $relationFilters = null;
 
+    /**
+     * Relation method paths trusted without a native Relation return type.
+     * Prefer typed relation methods; use this only for legacy models.
+     *
+     * @var list<string>
+     */
+    protected array $trustedRelations = [];
+
     protected ?bool $requestQueryStrict = null;
 
     /**
@@ -100,11 +108,11 @@ trait HasAllowedRequestQuery
             }
 
             $normalizedColumns = $this->normalizeAllowlist(is_array($columns) ? $columns : [$columns]);
-            if ($normalizedColumns === []) {
+            if ($normalizedColumns === null || $normalizedColumns === []) {
                 continue;
             }
 
-            $normalized[$relation] = $normalizedColumns;
+            $normalized[$relation] = array_values($normalizedColumns);
         }
 
         return $normalized;
@@ -127,7 +135,7 @@ trait HasAllowedRequestQuery
 
         return array_values(array_filter(
             $allowlist,
-            static fn (mixed $value): bool => is_string($value) && $value !== '',
+            static fn(mixed $value): bool => is_string($value) && $value !== '',
         ));
     }
 }

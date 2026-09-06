@@ -2,6 +2,8 @@
 
 These examples show opt-in repository compositions for common package use cases. They intentionally use only behavior currently provided by JOOservices Laravel Repository.
 
+For copy-paste recipes (make:repository, profiles, ignore/default, soft deletes), see [Cookbook](./cookbook.md).
+
 ## Basic UserRepository
 
 ```php
@@ -109,6 +111,8 @@ $count = $repository->remember($key, 300, static function (UserRepository $repos
 ```
 
 `HasCache` is a low-level opt-in wrapper around Laravel cache. It does not automatically cache queries and does not invalidate cache entries after CRUD operations.
+
+`cacheKey()` parts may be scalars, arrays, `DateTimeInterface`, `Stringable`, or `JsonSerializable`. Arbitrary objects are rejected — object IDs are not stable cache identity.
 
 ## Pagination And Iteration
 

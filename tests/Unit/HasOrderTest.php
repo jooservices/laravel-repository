@@ -22,7 +22,7 @@ class HasOrderTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->repo = new UserRepositoryStub(new UserStub);
+        $this->repo = new UserRepositoryStub(new UserStub());
     }
 
     #[Test]
@@ -78,9 +78,10 @@ class HasOrderTest extends TestCase
         $this->repo->create(['name' => 'Z', 'email' => 'z@x.com', 'status' => 'active']);
         $this->repo->create(['name' => 'A', 'email' => 'a@x.com', 'status' => 'active']);
         $order = new Order('name', 'asc');
-        $iterable = new class($order) implements IteratorAggregate
-        {
-            public function __construct(private readonly Order $order) {}
+        $iterable = new class ($order) implements IteratorAggregate {
+            public function __construct(private readonly Order $order)
+            {
+            }
 
             public function getIterator(): Generator
             {

@@ -8,9 +8,14 @@ The package provides:
 
 - `EloquentRepository` for model ownership and lazy query lifecycle
 - opt-in CRUD, filtering, ordering, and request-query traits
-- opt-in request-query aliases, scope definitions, aggregate include helpers, value-normalization rules, and relation count helpers
+- presets `ApiRepository` / `ReadRepository` and Artisan `make:repository`
+- opt-in request-query aliases, scope definitions, aggregate include helpers,
+  value-normalization rules, relation count helpers, and named query profiles
 - reusable `Filter` and `Order` value objects
 - `RequestQueryParser` for the implemented request clause families
+
+Current release line: **v4.0.0** — see [UPGRADE-4.0.md](../UPGRADE-4.0.md) and
+[CHANGELOG.md](../CHANGELOG.md).
 
 ## Recommended reading order
 
@@ -20,6 +25,7 @@ The package provides:
 4. [CRUD, Filter, And Order](./02-user-guide/crud-filter-order.md)
 5. [Request Query Support](./02-user-guide/request-query.md)
 6. [Examples](./03-examples/README.md)
+7. [Cookbook](./03-examples/cookbook.md)
 
 ## Documentation map
 
@@ -43,6 +49,7 @@ The package provides:
 ### Examples
 
 - [Repository Examples](./03-examples/README.md)
+- [Cookbook](./03-examples/cookbook.md)
 
 ### Development
 

@@ -15,7 +15,8 @@ final class RequestQueryInput
      */
     public static function resolve(Request $request): mixed
     {
-        $primary = (string) config('laravel-repository.request_key', 'filter');
+        $raw = config('laravel-repository.request_key', 'filter');
+        $primary = is_string($raw) && $raw !== '' ? $raw : 'filter';
         $secondary = $primary === 'filter' ? 'query' : 'filter';
 
         return $request->input($primary) ?? $request->input($secondary) ?? [];
@@ -28,6 +29,18 @@ final class RequestQueryInput
     {
         $data = self::resolve($request);
 
-        return is_array($data) ? $data : [];
+        if (! is_array($data)) {
+            return [];
+        }
+
+        $normalized = [];
+
+        foreach ($data as $key => $value) {
+            if (is_string($key)) {
+                $normalized[$key] = $value;
+            }
+        }
+
+        return $normalized;
     }
 }

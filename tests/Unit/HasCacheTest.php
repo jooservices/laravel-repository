@@ -17,8 +17,8 @@ class HasCacheTest extends TestCase
     #[Test]
     public function it_can_cache_and_forget_repository_results(): void
     {
-        $repo = new AllowedUserRepositoryStub(new UserStub);
-        $repo->create(['name' => 'A', 'email' => 'a@x.com', 'status' => 'active']);
+        $repo = new AllowedUserRepositoryStub(new UserStub());
+        $repo->create($this->fakeUserAttributes(['name' => 'A', 'status' => 'active']));
 
         $cachedCount = $repo->remember(
             'users.active.count',
@@ -28,7 +28,7 @@ class HasCacheTest extends TestCase
             },
         );
 
-        $repo->create(['name' => 'B', 'email' => 'b@x.com', 'status' => 'active']);
+        $repo->create($this->fakeUserAttributes(['name' => 'B', 'status' => 'active']));
 
         $stillCachedCount = $repo->remember(
             'users.active.count',
@@ -60,20 +60,25 @@ class HasCacheTest extends TestCase
             'serialize' => false,
         ]);
 
-        $repo = (new AllowedUserRepositoryStub(new UserStub))->useCacheStore('repository_test');
+        $repo = (new AllowedUserRepositoryStub(new UserStub()))->useCacheStore('repository_test');
         $key = $repo->cacheKey('users.count', ['status' => 'active', 1]);
 
-        $this->assertSame(
-            'JOOservices.LaravelRepository.Tests.Stubs.AllowedUserRepositoryStub.users.count.status:active.1',
+        $this->assertStringStartsWith(
+            'JOOservices.LaravelRepository.Tests.Stubs.AllowedUserRepositoryStub.users.count.',
             $key,
         );
+        $this->assertMatchesRegularExpression('/\.[a-f0-9]{32}$/', $key);
+        $this->assertNotSame(
+            $repo->cacheKey('users.count', [['a.b', 'c']]),
+            $repo->cacheKey('users.count', [['a', 'b.c']]),
+        );
 
-        $cached = $repo->rememberForever($key, static fn (): int => 10);
-        $again = $repo->rememberForever($key, static fn (): int => 20);
+        $cached = $repo->rememberForever($key, static fn(): int => 10);
+        $again = $repo->rememberForever($key, static fn(): int => 20);
 
         $this->assertSame(10, $cached);
         $this->assertSame(10, $again);
         $this->assertTrue($repo->forgetCache($key));
-        $this->assertSame(30, $repo->rememberForever($key, static fn (): int => 30));
+        $this->assertSame(30, $repo->rememberForever($key, static fn(): int => 30));
     }
 }

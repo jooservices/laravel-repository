@@ -7,7 +7,7 @@ namespace JOOservices\LaravelRepository\Support;
 /**
  * @phpstan-import-type ScopeClause from RequestQueryParser
  */
-class RequestQueryScopeParser
+final class RequestQueryScopeParser
 {
     /**
      * @param  array<int|string, mixed>  $items

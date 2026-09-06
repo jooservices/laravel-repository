@@ -10,7 +10,7 @@ namespace JOOservices\LaravelRepository\Support;
  * @phpstan-import-type WhereBetweenClause from RequestQueryParser
  * @phpstan-import-type WhereHasClause from RequestQueryParser
  */
-class RequestQueryRelationParser
+final class RequestQueryRelationParser
 {
     /**
      * @param  array<int|string, mixed>  $items

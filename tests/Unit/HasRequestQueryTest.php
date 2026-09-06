@@ -43,7 +43,7 @@ class HasRequestQueryTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->repo = new UserRepositoryStub(new UserStub);
+        $this->repo = new UserRepositoryStub(new UserStub());
     }
 
     #[Test]
@@ -298,7 +298,7 @@ class HasRequestQueryTest extends TestCase
     #[Test]
     public function it_applies_scope_aliases_from_request_metadata(): void
     {
-        $repo = (new AllowedUserRepositoryStub(new UserStub, null, null, null, true, ['email_domain']))
+        $repo = (new AllowedUserRepositoryStub(new UserStub(), null, null, null, true, ['email_domain']))
             ->withScopeMetadata([
                 'domain' => ['scope' => 'email_domain', 'parameters' => 1],
             ]);
@@ -348,7 +348,7 @@ class HasRequestQueryTest extends TestCase
     #[Test]
     public function it_applies_filter_aliases_from_request_metadata(): void
     {
-        $repo = (new AllowedUserRepositoryStub(new UserStub, ['email'], null, null, true))
+        $repo = (new AllowedUserRepositoryStub(new UserStub(), ['email'], null, null, true))
             ->withFilterAliases(['contact' => 'email']);
 
         $repo->create(['name' => 'Alias Match', 'email' => 'alias@x.com', 'status' => 'active']);
@@ -371,7 +371,7 @@ class HasRequestQueryTest extends TestCase
     #[Test]
     public function it_applies_relation_aliases_and_count_exists_includes_from_request_metadata(): void
     {
-        $repo = (new AllowedUserRepositoryStub(new UserStub, null, null, ['profile', 'posts'], true))
+        $repo = (new AllowedUserRepositoryStub(new UserStub(), null, null, ['profile', 'posts'], true))
             ->withRelationAliases(['account' => 'profile']);
 
         $user = $repo->create(['name' => 'Included', 'email' => 'included@x.com', 'status' => 'active']);
@@ -393,7 +393,7 @@ class HasRequestQueryTest extends TestCase
     #[Test]
     public function it_applies_aggregate_include_helpers_from_request_metadata(): void
     {
-        $repo = (new AllowedUserRepositoryStub(new UserStub, null, null, ['posts'], true))
+        $repo = (new AllowedUserRepositoryStub(new UserStub(), null, null, ['posts'], true))
             ->withAggregateIncludes([
                 'postsVotesSum' => ['relation' => 'posts', 'column' => 'votes', 'function' => 'sum'],
                 'postsVotesAvg' => ['relation' => 'posts', 'column' => 'votes', 'function' => 'avg'],
@@ -422,7 +422,7 @@ class HasRequestQueryTest extends TestCase
     #[Test]
     public function it_normalizes_root_filter_values_from_request_metadata(): void
     {
-        $repo = (new AllowedUserRepositoryStub(new UserStub))
+        $repo = (new AllowedUserRepositoryStub(new UserStub()))
             ->withValueRules([
                 'filters' => [
                     'email' => ['trim', 'lowercase'],
@@ -448,10 +448,10 @@ class HasRequestQueryTest extends TestCase
     #[Test]
     public function it_applies_callback_style_micro_filters_and_normalizes_values(): void
     {
-        $repo = (new AllowedUserRepositoryStub(new UserStub))
+        $repo = (new AllowedUserRepositoryStub(new UserStub()))
             ->withRequestFilters([
                 'search' => static function (Builder $query, mixed $value): void {
-                    $query->where('name', 'like', '%'.$value.'%');
+                    $query->where('name', 'like', '%' . $value . '%');
                 },
             ])
             ->withValueRules([
@@ -480,7 +480,7 @@ class HasRequestQueryTest extends TestCase
     #[Test]
     public function it_normalizes_scope_parameters_from_request_metadata(): void
     {
-        $repo = (new AllowedUserRepositoryStub(new UserStub, null, null, null, false, ['email_domain']))
+        $repo = (new AllowedUserRepositoryStub(new UserStub(), null, null, null, false, ['email_domain']))
             ->withScopeMetadata([
                 'domain' => ['scope' => 'email_domain', 'parameters' => 1],
             ])
@@ -510,7 +510,7 @@ class HasRequestQueryTest extends TestCase
     #[Test]
     public function it_normalizes_relation_filter_values_from_request_metadata(): void
     {
-        $repo = new AllowedUserRepositoryStub(new UserStub);
+        $repo = new AllowedUserRepositoryStub(new UserStub());
         $author = $repo->create(['name' => 'Author', 'email' => self::AUTHOR_EMAIL, 'status' => 'active']);
         $other = $repo->create(['name' => 'Other', 'email' => self::OTHER_EMAIL, 'status' => 'active']);
 
@@ -696,7 +696,7 @@ class HasRequestQueryTest extends TestCase
     #[Test]
     public function it_applies_field_selection_from_request(): void
     {
-        $repo = (new AllowedUserRepositoryStub(new UserStub))->withAllowedFields(['name']);
+        $repo = (new AllowedUserRepositoryStub(new UserStub()))->withAllowedFields(['name']);
         $repo->create(['name' => 'Selected', 'email' => 'selected@x.com', 'status' => 'active']);
 
         $request = Request::create('/', 'GET', [
@@ -714,7 +714,7 @@ class HasRequestQueryTest extends TestCase
     #[Test]
     public function it_applies_named_request_filters_from_request(): void
     {
-        $repo = (new AllowedUserRepositoryStub(new UserStub))
+        $repo = (new AllowedUserRepositoryStub(new UserStub()))
             ->withRequestFilters(['search' => SearchUsersRequestFilterStub::class]);
 
         $repo->create(['name' => self::JOHN_NAME, 'email' => self::JOHN_EMAIL, 'status' => 'active']);
@@ -768,7 +768,10 @@ class HasRequestQueryTest extends TestCase
         config()->set('laravel-repository.max_per_page', 3);
 
         foreach (range(1, 5) as $index) {
-            $this->repo->create(['name' => 'User '.$index, 'email' => 'user'.$index.'@x.com', 'status' => 'active']);
+            $this->repo->create($this->fakeUserAttributes([
+                'name' => 'User ' . $index,
+                'status' => 'active',
+            ]));
         }
 
         $default = $this->repo->paginateFromRequest(Request::create('/', 'GET', []));
@@ -783,7 +786,7 @@ class HasRequestQueryTest extends TestCase
     #[Test]
     public function it_throws_for_invalid_request_per_page_in_strict_mode(): void
     {
-        $repo = new AllowedUserRepositoryStub(new UserStub, [], [], [], true);
+        $repo = new AllowedUserRepositoryStub(new UserStub(), [], [], [], true);
 
         $this->expectException(InvalidRequestQueryException::class);
         $this->expectExceptionMessage(
@@ -796,7 +799,7 @@ class HasRequestQueryTest extends TestCase
     #[Test]
     public function paginate_from_request_resets_query_when_request_query_fails(): void
     {
-        $repo = new AllowedUserRepositoryStub(new UserStub, ['status'], [], [], true);
+        $repo = new AllowedUserRepositoryStub(new UserStub(), ['status'], [], [], true);
         $repo->create(['name' => 'A', 'email' => self::ACTIVE_EMAIL, 'status' => 'active']);
         $repo->create(['name' => 'B', 'email' => self::SECOND_EMAIL, 'status' => 'pending']);
 
@@ -818,7 +821,7 @@ class HasRequestQueryTest extends TestCase
     #[Test]
     public function from_request_exception_resets_query_for_later_queries(): void
     {
-        $repo = new AllowedUserRepositoryStub(new UserStub, ['status'], [], [], true);
+        $repo = new AllowedUserRepositoryStub(new UserStub(), ['status'], [], [], true);
         $repo->create(['name' => 'A', 'email' => self::ACTIVE_EMAIL, 'status' => 'active']);
         $repo->create(['name' => 'B', 'email' => self::SECOND_EMAIL, 'status' => 'pending']);
 
@@ -843,7 +846,7 @@ class HasRequestQueryTest extends TestCase
     #[Test]
     public function from_request_operator_validation_failure_resets_existing_fluent_state(): void
     {
-        $repo = new AllowedUserRepositoryStub(new UserStub, ['status'], [], [], true);
+        $repo = new AllowedUserRepositoryStub(new UserStub(), ['status'], [], [], true);
         $repo->create(['name' => 'A', 'email' => self::ACTIVE_EMAIL, 'status' => 'active']);
         $repo->create(['name' => 'B', 'email' => self::SECOND_EMAIL, 'status' => 'pending']);
 
@@ -873,7 +876,7 @@ class HasRequestQueryTest extends TestCase
     {
         config()->set('laravel-repository.max_per_page', 2);
 
-        $repo = new AllowedUserRepositoryStub(new UserStub, [], [], [], true);
+        $repo = new AllowedUserRepositoryStub(new UserStub(), [], [], [], true);
 
         $this->expectException(InvalidRequestQueryException::class);
         $this->expectExceptionMessage('Request query per-page value [3] exceeds the configured maximum of [2].');

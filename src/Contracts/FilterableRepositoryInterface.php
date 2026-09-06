@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace JOOservices\LaravelRepository\Contracts;
 
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
@@ -25,6 +26,11 @@ interface FilterableRepositoryInterface
      * @return LengthAwarePaginator<int, Model>
      */
     public function paginate(int $perPage = 15): LengthAwarePaginator;
+
+    /**
+     * @return Paginator<int, Model>
+     */
+    public function simplePaginate(int $perPage = 15): Paginator;
 
     /**
      * @return Builder<Model>

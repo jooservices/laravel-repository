@@ -22,7 +22,12 @@ interface ProvidesRequestQueryMetadataInterface
     public function scopeMetadata(): array;
 
     /**
-     * @return array<string, array{relation: string, column: string, function: string, attribute: string}>
+     * @return array<string, array{
+     *     relation: string,
+     *     column: string,
+     *     function: 'sum'|'avg'|'min'|'max',
+     *     attribute: string
+     * }>
      */
     public function aggregateIncludes(): array;
 

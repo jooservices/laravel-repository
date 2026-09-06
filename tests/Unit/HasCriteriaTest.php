@@ -20,11 +20,11 @@ class HasCriteriaTest extends TestCase
     #[Test]
     public function it_applies_pushed_criteria_to_each_fresh_query(): void
     {
-        $repo = new AllowedUserRepositoryStub(new UserStub);
+        $repo = new AllowedUserRepositoryStub(new UserStub());
         $repo->create(['name' => 'A', 'email' => 'a@x.com', 'status' => 'active']);
         $repo->create(['name' => 'B', 'email' => 'b@x.com', 'status' => 'pending']);
 
-        $repo->pushCriteria(new ActiveStatusCriteriaStub);
+        $repo->pushCriteria(new ActiveStatusCriteriaStub());
 
         $this->assertCount(1, $repo->get());
         $this->assertCount(1, $repo->get());
@@ -33,15 +33,15 @@ class HasCriteriaTest extends TestCase
     #[Test]
     public function it_can_clear_and_pop_criteria(): void
     {
-        $repo = new AllowedUserRepositoryStub(new UserStub);
+        $repo = new AllowedUserRepositoryStub(new UserStub());
         $repo->create(['name' => 'A', 'email' => 'a@x.com', 'status' => 'active']);
         $repo->create(['name' => 'B', 'email' => 'b@x.com', 'status' => 'pending']);
 
-        $repo->pushCriteria(new ActiveStatusCriteriaStub);
+        $repo->pushCriteria(new ActiveStatusCriteriaStub());
         $this->assertInstanceOf(ActiveStatusCriteriaStub::class, $repo->popCriteria());
         $this->assertCount(2, $repo->get());
 
-        $repo->pushCriteria(new ActiveStatusCriteriaStub);
+        $repo->pushCriteria(new ActiveStatusCriteriaStub());
         $repo->clearCriteria();
 
         $this->assertCount(2, $repo->get());
@@ -51,12 +51,12 @@ class HasCriteriaTest extends TestCase
     #[Test]
     public function criteria_changes_rebuild_query_state_predictably(): void
     {
-        $repo = new AllowedUserRepositoryStub(new UserStub);
+        $repo = new AllowedUserRepositoryStub(new UserStub());
         $repo->create(['name' => 'A', 'email' => 'criteria-a@x.com', 'status' => 'active']);
         $repo->create(['name' => 'B', 'email' => 'criteria-b@x.com', 'status' => 'pending']);
 
         $repo->filter(['name' => 'A']);
-        $repo->pushCriteria(new ActiveStatusCriteriaStub);
+        $repo->pushCriteria(new ActiveStatusCriteriaStub());
 
         $this->assertCount(1, $repo->get());
 
@@ -64,7 +64,7 @@ class HasCriteriaTest extends TestCase
 
         $this->assertCount(2, $repo->get());
 
-        $repo->pushCriteria(new ActiveStatusCriteriaStub);
+        $repo->pushCriteria(new ActiveStatusCriteriaStub());
         $this->assertCount(1, $repo->get());
 
         $repo->clearCriteria();
@@ -74,12 +74,13 @@ class HasCriteriaTest extends TestCase
     #[Test]
     public function it_exposes_criteria_and_does_not_reapply_the_same_query(): void
     {
-        $repo = new AllowedUserRepositoryStub(new UserStub);
+        $repo = new AllowedUserRepositoryStub(new UserStub());
         $applications = 0;
 
-        $criteria = new class($applications) implements CriteriaInterface
-        {
-            public function __construct(private int &$applications) {}
+        $criteria = new class ($applications) implements CriteriaInterface {
+            public function __construct(private int &$applications)
+            {
+            }
 
             public function apply(\Illuminate\Database\Eloquent\Builder $query): void
             {

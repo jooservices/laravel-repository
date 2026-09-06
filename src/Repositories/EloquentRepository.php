@@ -8,6 +8,11 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use JOOservices\LaravelRepository\Contracts\CriteriaRepositoryInterface;
 
+/**
+ * Base Eloquent repository.
+ *
+ * @property Model $model
+ */
 class EloquentRepository
 {
     /**
@@ -15,9 +20,13 @@ class EloquentRepository
      */
     protected ?Builder $query = null;
 
+    /**
+     * @param  Model  $model
+     */
     public function __construct(
         protected Model $model,
-    ) {}
+    ) {
+    }
 
     public function getModel(): Model
     {
@@ -39,8 +48,8 @@ class EloquentRepository
      * Override this hook to customize criteria-aware CRUD reads.
      *
      * Criteria are applied directly (not via applyCriteria idempotency) because
-     * this always builds a brand-new builder. applyCriteria tracks object ids of
-     * the shared fluent builder; reusing those ids after GC can skip criteria.
+     * this always builds a brand-new builder. applyCriteria tracks applied
+     * builders with a WeakMap on the shared fluent query path.
      *
      * @return Builder<Model>
      */
