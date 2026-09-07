@@ -1,12 +1,13 @@
-# JOOservices Laravel Repository
+# jooservices/laravel-repository
 
 [![CI](https://github.com/jooservices/laravel-repository/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/jooservices/laravel-repository/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/jooservices/laravel-repository/graph/badge.svg)](https://codecov.io/gh/jooservices/laravel-repository)
+[![Coverage (develop)](https://codecov.io/gh/jooservices/laravel-repository/branch/develop/graph/badge.svg)](https://codecov.io/gh/jooservices/laravel-repository/branch/develop)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/jooservices/laravel-repository/badge)](https://securityscorecards.dev/viewer/?uri=github.com/jooservices/laravel-repository)
 [![PHP Version](https://img.shields.io/badge/PHP-8.5%2B-blue.svg)](https://www.php.net/)
-[![Release](https://img.shields.io/badge/version-4.0.0-blue.svg)](CHANGELOG.md)
+[![GitHub Release](https://img.shields.io/github/v/release/jooservices/laravel-repository?display_name=tag)](https://github.com/jooservices/laravel-repository/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Packagist Version](https://img.shields.io/packagist/v/jooservices/laravel-repository)](https://packagist.org/packages/jooservices/laravel-repository)
+[![Total Downloads](https://img.shields.io/packagist/dt/jooservices/laravel-repository)](https://packagist.org/packages/jooservices/laravel-repository)
 
 **JOOservices Laravel Repository** is a PHP 8.5+ Laravel package for trait-based
 repository composition: CRUD, filtering, ordering, criteria, and request-driven
